@@ -1,0 +1,16 @@
+{
+  "name": "AbdoulGame PRO",
+  "short_name": "AbdoulGame",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#7000ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5358/5358652.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
