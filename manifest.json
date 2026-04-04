@@ -1,5 +1,5 @@
 {
-  "name": "AbdoulGame PRO",
+  "name": "AbdoulGame Stadium PRO",
   "short_name": "AbdoulGame",
   "start_url": "index.html",
   "display": "standalone",
@@ -8,8 +8,14 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/5358/5358652.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/8065/8065416.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/8065/8065416.png",
+      "sizes": "192x192",
       "type": "image/png"
     }
   ]
