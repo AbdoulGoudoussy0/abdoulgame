@@ -2,174 +2,95 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#020617">
-    <title>AbdoulGame PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AbdoulGame Stadium PRO</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJnameIjogIkFiZG91bEdhbWUgUFJPIiwKICAic2hvcnRfbmFtZSI6ICJBYmRvdWxHYW1lIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMjA2MTciLAogICJ0aGVtZV9jb2xvciI6ICIjMDAyMmZmIgp9">
+    <!-- ICONO ESPECTACULAR PARA TU TABLET -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
+    <link rel="manifest" href="manifest.json">
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
-    <style>
-        :root {
-            --primary: #00f2ff;
-            --secondary: #7000ff;
-            --ai: #ff00c8;
-            --success: #00ff88;
-            --bg: #020617;
-        }
 
+    <style>
+        :root { --p: #00f2ff; --s: #7000ff; --ai: #ff00c8; --success: #00ff88; --bg: #020617; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
         body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg);
+            font-family: 'Outfit', sans-serif; background: var(--bg);
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b, #020617);
             color: white; margin: 0; display: flex; flex-direction: column;
-            align-items: center; height: 100dvh; overflow: hidden;
+            align-items: center; height: 100dvh; overflow: hidden; user-select: none;
         }
-
-        /* --- UI STADIUM --- */
-        .top-ui {
-            width: 100%; padding: 15px 25px; display: flex;
-            justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .stat-badge {
-            background: rgba(255,255,255,0.05); padding: 5px 15px;
-            border-radius: 12px; border: 1px solid var(--primary); font-weight: 900;
-        }
-
-        .ai-box {
-            width: 92%; margin: 12px 0; padding: 12px;
-            background: rgba(255, 0, 200, 0.05); border-radius: 15px;
-            border: 1px solid var(--ai); display: flex; align-items: center; gap: 10px;
-        }
-
-        /* --- TABLERO --- */
-        #game-board {
-            background: rgba(255,255,255,0.03); padding: 8px;
-            border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
-            display: grid; gap: 4px; touch-action: none;
-        }
-
-        .cell {
-            width: clamp(34px, 9vw, 45px); height: clamp(34px, 9vw, 45px);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.1rem; border-radius: 8px;
-            background: rgba(255,255,255,0.05); color: #cbd5e1;
-        }
-
-        .cell.active { background: var(--secondary) !important; color: white; transform: scale(1.1); }
-        .cell.found { background: var(--success) !important; color: #000; box-shadow: 0 0 15px var(--success); }
-        .cell.hint-on { background: var(--ai) !important; color: white !important; animation: pulse 0.5s infinite alternate; }
-
+        .top-bar { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        .stat-badge { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 12px; border: 1px solid var(--p); font-weight: 900; }
+        .ai-status { width: 90%; margin: 10px 0; padding: 10px; background: rgba(255, 0, 200, 0.05); border-left: 4px solid var(--ai); border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 10px; }
+        #game-board { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: grid; gap: 4px; touch-action: none; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .cell { width: clamp(34px, 9vw, 48px); height: clamp(34px, 9vw, 48px); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; border-radius: 8px; background: rgba(255,255,255,0.05); transition: 0.2s; color: #cbd5e1; }
+        .cell.active { background: var(--s) !important; color: white; transform: scale(1.1); box-shadow: 0 0 15px var(--s); }
+        .cell.found { background: var(--success) !important; color: #000; box-shadow: 0 0 10px var(--success); }
+        .cell.hint-glow { background: var(--ai) !important; color: white !important; animation: pulse 0.5s infinite alternate; }
         @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
-
-        /* --- BOTONES --- */
-        .btn-premium {
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            color: white; padding: 16px 40px; border-radius: 20px;
-            font-weight: 900; border: none; cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
-            margin-top: auto; margin-bottom: 25px;
-        }
-
-        .word-tag {
-            padding: 5px 12px; background: rgba(255,255,255,0.05);
-            border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .word-tag.done { background: var(--success); color: #000; opacity: 0.5; text-decoration: line-through; }
-
-        .modal {
-            position: fixed; inset: 0; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 2000; text-align: center; padding: 20px;
-        }
+        .word-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; justify-content: center; max-width: 500px; }
+        .tag { padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1); }
+        .tag.done { background: var(--success); color: #000; opacity: 0.3; text-decoration: line-through; }
+        .btn-main { background: linear-gradient(135deg, var(--s), var(--p)); color: white; padding: 16px 40px; border-radius: 20px; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4); margin-top: auto; margin-bottom: 25px; text-transform: uppercase; }
+        .modal { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
-
     <div id="start-modal" class="modal">
-        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
+        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
         <p style="opacity: 0.6; margin-bottom: 40px;">STADIUM PRO EDITION</p>
-        <button class="btn-premium" onclick="initGame()">¡SALIR AL CAMPO!</button>
+        <button class="btn-main" onclick="startApp()">¡ENTRAR AL ESTADIO!</button>
     </div>
-
-    <div class="top-ui">
-        <div class="stat-badge" id="timer-ui">⏱️ 02:00</div>
+    <div class="top-bar">
+        <div class="stat-badge" id="timer-ui" style="color: var(--p);">⏱️ 02:00</div>
         <div class="stat-badge">⭐ <span id="score-ui">0</span></div>
     </div>
-
-    <div class="ai-box">
-        <div style="width: 10px; height: 10px; background: var(--ai); border-radius: 50%;"></div>
-        <div id="ai-msg">¡Hola Abdoul! El estadio espera tu victoria.</div>
+    <div class="ai-status">
+        <div style="width: 12px; height: 12px; background: var(--ai); border-radius: 50%; box-shadow: 0 0 10px var(--ai);"></div>
+        <div id="ai-msg">¡Hola Abdoul! El estadio espera tu gran jugada.</div>
     </div>
-
     <div id="game-board"></div>
-    <div id="word-list" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 15px;"></div>
-
-    <button class="btn-premium" onclick="useAIHint()">🤖 ESCANEO IA (-100 ⭐)</button>
-
+    <div class="word-list" id="word-list"></div>
+    <button class="btn-main" onclick="triggerAIHint()" style="padding: 12px 25px; font-size: 1rem;">🤖 ESCANEO IA (-100 ⭐)</button>
     <div id="win-modal" class="modal" style="display: none;">
-        <h2 style="font-size: 4rem; color: var(--success); margin: 0;">¡GOOOL!</h2>
-        <button class="btn-premium" onclick="nextLevel()">Siguiente Partido</button>
+        <h2 style="font-size: 4rem; color: var(--success); margin: 0;">¡GOOOOL!</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 30px;">¡Ovación total en el estadio!</p>
+        <button class="btn-main" onclick="nextLevel()">Siguiente Partido</button>
     </div>
-
-    <!-- Audios con enlaces ultra estables -->
     <audio id="bg-music" loop src="https://cdn.pixabay.com/audio/2022/03/10/audio_c33671f652.mp3"></audio>
     <audio id="snd-win" src="https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3"></audio>
     <audio id="snd-lose" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
-
     <script>
         const LEVELS = [
             { grid: 8, words: ["ABDOUL", "EXITO", "GOL", "PRO", "WEB"] },
-            { grid: 10, words: ["PREMIUM", "ESTADIO", "MASTER", "STARS", "GENIO"] },
-            { grid: 12, words: ["VICTORIA", "CAMPEON", "FUTURO", "MODERNO", "SOPA"] }
+            { grid: 10, words: ["PREMIUM", "ESTADIO", "MASTER", "STARS", "GENIO"] }
         ];
-
-        let currentLvl = 0, score = 0, timeLeft = 120, timerInterval;
-        let foundWords = [], matrix = [], wordCoords = {}, isDragging = false, selection = [];
-
-        function initGame() {
-            document.getElementById('start-modal').style.display = 'none';
-            const music = document.getElementById('bg-music');
-            music.volume = 0.2; music.play();
-            loadLevel();
-        }
-
-        function loadLevel() {
+        let currentLvl = 0, score = 0, timeLeft = 120, timerInterval, foundWords = [], matrix = [], wordCoords = {}, isDragging = false, selection = [];
+        function startApp() { document.getElementById('start-modal').style.display = 'none'; document.getElementById('bg-music').volume = 0.2; document.getElementById('bg-music').play(); loadLevel(); }
+        function loadLevel() { 
             const config = LEVELS[currentLvl] || LEVELS[LEVELS.length-1];
             foundWords = []; wordCoords = {}; timeLeft = 120;
             document.getElementById('win-modal').style.display = 'none';
-            generateBoard(config);
-            renderBoard(config);
-            startTimer();
+            generateBoard(config); renderBoard(config); startTimer();
         }
-
         function generateBoard(config) {
             let placed = false;
             while(!placed) {
                 matrix = Array(config.grid).fill().map(() => Array(config.grid).fill(''));
                 placed = true;
-                for(let word of config.words) {
-                    if(!placeWord(word, config.grid)) { placed = false; break; }
-                }
+                for(let word of config.words) { if(!placeWord(word, config.grid)) { placed = false; break; } }
             }
-            for(let r=0; r<config.grid; r++)
-                for(let c=0; c<config.grid; c++)
-                    if(!matrix[r][c]) matrix[r][c] = String.fromCharCode(65 + Math.floor(Math.random()*26));
+            for(let r=0; r<config.grid; r++) for(let c=0; c<config.grid; c++) if(!matrix[r][c]) matrix[r][c] = String.fromCharCode(65 + Math.floor(Math.random()*26));
         }
-
         function placeWord(word, size) {
             const dirs = [[0,1], [1,0], [1,1], [1,-1]];
             for(let i=0; i<100; i++) {
-                const d = dirs[Math.floor(Math.random()*dirs.length)];
-                const r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size);
+                const d = dirs[Math.floor(Math.random()*dirs.length)], r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size);
                 if(canPlace(word, r, c, d, size)) {
                     wordCoords[word] = [];
                     for(let j=0; j<word.length; j++) {
@@ -182,83 +103,60 @@
             }
             return false;
         }
-
         function canPlace(w, r, c, d, s) {
             for(let i=0; i<w.length; i++) {
                 let nr = r + i*d[0], nc = c + i*d[1];
-                if(nr<0 || nr>=s || nc<0 || nc>=s || (matrix[nr][nc] && matrix[nr][nc] !== w[i])) return false;
+                if(nr < 0 || nr >= s || nc < 0 || nc >= s || (matrix[nr][nc] && matrix[nr][nc] !== w[i])) return false;
             }
             return true;
         }
-
         function renderBoard(config) {
             const board = document.getElementById('game-board');
-            board.innerHTML = '';
-            board.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
+            board.innerHTML = ''; board.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
             for(let r=0; r<config.grid; r++) {
                 for(let c=0; c<config.grid; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell'; cell.innerText = matrix[r][c];
-                    cell.dataset.r = r; cell.dataset.c = c;
-                    cell.onpointerdown = e => { 
-                        isDragging = true; selection = [cell]; cell.classList.add('active'); 
-                        if(navigator.vibrate) navigator.vibrate(15);
-                        cell.releasePointerCapture(e.pointerId); 
-                    };
-                    cell.onpointerenter = () => { if(isDragging && !selection.includes(cell)) { selection.push(cell); cell.classList.add('active'); if(navigator.vibrate) navigator.vibrate(10); } };
-                    board.appendChild(cell);
+                    const el = document.createElement('div'); el.className = 'cell'; el.innerText = matrix[r][c]; el.dataset.r = r; el.dataset.c = c;
+                    el.onpointerdown = e => { isDragging = true; selection = [el]; el.classList.add('active'); if(navigator.vibrate) navigator.vibrate(15); el.releasePointerCapture(e.pointerId); };
+                    el.onpointerenter = () => { if(isDragging && !selection.includes(el)) { selection.push(el); el.classList.add('active'); if(navigator.vibrate) navigator.vibrate(10); } };
+                    board.appendChild(el);
                 }
             }
             window.onpointerup = endSelection;
-            const list = document.getElementById('word-list');
-            list.innerHTML = '';
-            config.words.forEach(w => list.innerHTML += `<div class="word-tag" id="tag-${w}">${w}</div>`);
+            const list = document.getElementById('word-list'); list.innerHTML = '';
+            config.words.forEach(w => list.innerHTML += `<div class="tag" id="tag-${w}">${w}</div>`);
         }
-
         function endSelection() {
             if(!isDragging) return; isDragging = false;
-            const word = selection.map(c => c.innerText).join('');
-            const wordRev = word.split('').reverse().join('');
-            const config = LEVELS[currentLvl];
-            const found = config.words.find(w => w === word || w === wordRev);
+            const word = selection.map(c => c.innerText).join(''), rev = word.split('').reverse().join(''), config = LEVELS[currentLvl], found = config.words.find(w => w === word || w === rev);
             if(found && !foundWords.includes(found)) {
-                foundWords.push(found);
-                selection.forEach(c => { c.classList.remove('active'); c.classList.add('found'); });
-                document.getElementById('tag-'+found).classList.add('done');
-                score += 150; document.getElementById('score-ui').innerText = score;
+                foundWords.push(found); selection.forEach(c => { c.classList.remove('active'); c.classList.add('found'); });
+                document.getElementById('tag-'+found).classList.add('done'); score += 150; document.getElementById('score-ui').innerText = score;
                 if(foundWords.length === config.words.length) triggerWin();
             } else selection.forEach(c => c.classList.remove('active'));
             selection = [];
         }
-
-        function useAIHint() {
-            if(score < 100) return; score -= 100;
-            document.getElementById('score-ui').innerText = score;
+        function triggerAIHint() {
+            if(score < 100) return alert("¡Necesitas 100 estrellas!");
+            score -= 100; document.getElementById('score-ui').innerText = score;
             const pending = LEVELS[currentLvl].words.find(w => !foundWords.includes(w));
-            if(pending) wordCoords[pending].forEach(pos => {
+            wordCoords[pending].forEach(pos => {
                 const el = document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`);
-                el.classList.add('hint-on'); setTimeout(() => el.classList.remove('hint-on'), 3000);
+                el.classList.add('hint-glow'); setTimeout(() => el.classList.remove('hint-glow'), 3000);
             });
         }
-
         function startTimer() {
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                timeLeft--;
-                const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
-                const s = (timeLeft%60).toString().padStart(2,'0');
+                timeLeft--; const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
                 document.getElementById('timer-ui').innerText = `⏱️ ${m}:${s}`;
                 if(timeLeft <= 0) { clearInterval(timerInterval); document.getElementById('snd-lose').play(); location.reload(); }
             }, 1000);
         }
-
         function triggerWin() {
-            clearInterval(timerInterval);
-            document.getElementById('snd-win').play();
+            clearInterval(timerInterval); document.getElementById('snd-win').play();
             confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
             setTimeout(() => document.getElementById('win-modal').style.display = 'flex', 1000);
         }
-
         function nextLevel() { currentLvl++; loadLevel(); }
     </script>
 </body>
