@@ -89,6 +89,7 @@
             margin-top: 6px;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            gap: 10px;
         }
 
         .stat-badge { 
@@ -100,6 +101,7 @@
             font-size: 0.9rem;
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
+            white-space: nowrap;
         }
         
         .selection-preview { 
@@ -116,6 +118,8 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             backdrop-filter: blur(5px);
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .knowledge-banner { 
@@ -160,6 +164,8 @@
             touch-action: none; 
             transition: 0.4s;
             box-shadow: var(--shadow);
+            flex-shrink: 1;
+            overflow: auto;
         }
         
         .cell { 
@@ -176,6 +182,7 @@
             transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: pointer;
             border: 1px solid rgba(255,255,255,0.1);
+            user-select: none;
         }
 
         .cell:hover {
@@ -222,6 +229,7 @@
             text-align: center; 
             padding: 20px;
             backdrop-filter: blur(5px);
+            overflow-y: auto;
         }
         
         .settings-card { 
@@ -260,6 +268,8 @@
             border-bottom: 1px solid rgba(255,255,255,0.05); 
             padding: 12px 0; 
             font-weight: 600;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .setting-item:last-of-type {
@@ -277,6 +287,7 @@
             min-width: 90px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
         }
 
         .btn-toggle:hover {
@@ -303,6 +314,7 @@
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 8px 20px rgba(112, 0, 255, 0.3);
             letter-spacing: 1px;
+            font-size: 1rem;
         }
 
         .btn-main:hover {
@@ -323,6 +335,7 @@
             font-weight: 700;
             transition: all 0.3s ease;
             cursor: default;
+            white-space: nowrap;
         }
 
         .word-tag:hover:not(.done) {
@@ -356,6 +369,7 @@
             width: 140px;
             cursor: pointer;
             accent-color: var(--p);
+            flex-shrink: 0;
         }
 
         .save-indicator {
@@ -410,6 +424,7 @@
             font-size: 0.85rem;
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
+            z-index: 999;
         }
 
         .combo-counter {
@@ -425,6 +440,7 @@
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
             color: var(--ai);
+            z-index: 999;
         }
 
         .combo-counter.active {
@@ -443,6 +459,388 @@
                 transform: scale(1);
             }
         }
+
+        #word-bank {
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 12px;
+            max-height: 80px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        /* ========================================
+           RESPONSIVE DESIGN - MEDIA QUERIES
+           ======================================== */
+
+        /* 📱 MÓVIL - Pequeño (< 480px) */
+        @media (max-width: 479px) {
+            body {
+                padding: 0;
+            }
+
+            .top-bar {
+                padding: 10px 12px;
+                gap: 5px;
+            }
+
+            .stat-badge {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+
+            .selection-preview {
+                height: 32px;
+                font-size: 0.9rem;
+                letter-spacing: 1px;
+            }
+
+            .knowledge-banner {
+                width: 95%;
+                margin: 8px 0;
+                padding: 12px;
+                font-size: 0.8rem;
+                min-height: 60px;
+                border-radius: 12px;
+            }
+
+            #game-board {
+                margin: 8px;
+                padding: 8px;
+                gap: 4px;
+            }
+
+            .cell {
+                width: clamp(28px, 8vw, 40px);
+                height: clamp(28px, 8vw, 40px);
+                font-size: 1rem;
+                border-radius: 6px;
+            }
+
+            .cell.active {
+                transform: scale(1.15);
+            }
+
+            .level-indicator,
+            .combo-counter {
+                top: 60px;
+                padding: 6px 12px;
+                font-size: 0.7rem;
+                border-radius: 8px;
+            }
+
+            .level-indicator {
+                left: 10px;
+            }
+
+            .combo-counter {
+                right: 10px;
+            }
+
+            #word-bank {
+                max-height: 70px;
+                gap: 6px;
+                padding: 8px;
+            }
+
+            .word-tag {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+                border-radius: 10px;
+            }
+
+            .btn-main {
+                padding: 10px 20px;
+                font-size: 0.8rem;
+                border-radius: 16px;
+            }
+
+            .modal {
+                padding: 15px;
+            }
+
+            .settings-card {
+                width: 98%;
+                max-width: 100%;
+                padding: 20px;
+                border-radius: 25px;
+                gap: 12px;
+            }
+
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 0;
+            }
+
+            .btn-toggle {
+                width: 100%;
+                min-width: unset;
+            }
+
+            #vol-slider {
+                width: 100%;
+            }
+
+            .save-indicator {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+
+            h1 {
+                font-size: 2.5rem !important;
+            }
+
+            #start-modal h1 {
+                font-size: 2.5rem !important;
+            }
+
+            #win-modal h2 {
+                font-size: 2.5rem !important;
+            }
+        }
+
+        /* 📲 TABLET - Mediano (480px - 1023px) */
+        @media (min-width: 480px) and (max-width: 1023px) {
+            body {
+                padding: 0;
+            }
+
+            .top-bar {
+                padding: 12px 18px;
+                gap: 8px;
+            }
+
+            .stat-badge {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+
+            .selection-preview {
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .knowledge-banner {
+                width: 93%;
+                margin: 10px 0;
+                padding: 15px;
+                font-size: 0.9rem;
+                min-height: 70px;
+            }
+
+            #game-board {
+                margin: 10px;
+                padding: 10px;
+                gap: 5px;
+            }
+
+            .cell {
+                width: clamp(36px, 9vw, 52px);
+                height: clamp(36px, 9vw, 52px);
+                font-size: 1.1rem;
+            }
+
+            .level-indicator,
+            .combo-counter {
+                top: 65px;
+                padding: 7px 14px;
+                font-size: 0.8rem;
+            }
+
+            #word-bank {
+                max-height: 85px;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .word-tag {
+                padding: 7px 12px;
+                font-size: 0.85rem;
+            }
+
+            .btn-main {
+                padding: 12px 28px;
+                font-size: 0.9rem;
+            }
+
+            .settings-card {
+                width: 90%;
+                max-width: 500px;
+                padding: 28px;
+            }
+
+            .setting-item {
+                flex-direction: row;
+                padding: 12px 0;
+            }
+
+            #vol-slider {
+                width: 150px;
+            }
+
+            h1 {
+                font-size: 3rem !important;
+            }
+
+            #win-modal h2 {
+                font-size: 3.5rem !important;
+            }
+        }
+
+        /* 🖥️ DESKTOP - Grande (>= 1024px) */
+        @media (min-width: 1024px) {
+            body {
+                padding: 0;
+            }
+
+            .top-bar {
+                padding: 15px 25px;
+                gap: 15px;
+            }
+
+            .stat-badge {
+                padding: 10px 16px;
+                font-size: 0.95rem;
+            }
+
+            .selection-preview {
+                height: 42px;
+                font-size: 1.2rem;
+                letter-spacing: 2px;
+            }
+
+            .knowledge-banner {
+                width: 90%;
+                margin: 12px 0;
+                padding: 20px;
+                font-size: 1rem;
+                min-height: 85px;
+            }
+
+            #game-board {
+                margin: 12px;
+                padding: 15px;
+                gap: 7px;
+            }
+
+            .cell {
+                width: clamp(48px, 10vw, 70px);
+                height: clamp(48px, 10vw, 70px);
+                font-size: 1.3rem;
+                border-radius: 10px;
+            }
+
+            .cell:hover {
+                background: rgba(255,255,255,0.12);
+            }
+
+            .cell.active {
+                transform: scale(1.25);
+            }
+
+            .level-indicator,
+            .combo-counter {
+                top: 75px;
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+
+            .level-indicator {
+                left: 25px;
+            }
+
+            .combo-counter {
+                right: 25px;
+            }
+
+            #word-bank {
+                max-height: 100px;
+                gap: 12px;
+                padding: 15px;
+            }
+
+            .word-tag {
+                padding: 10px 16px;
+                font-size: 0.95rem;
+                border-radius: 14px;
+            }
+
+            .btn-main {
+                padding: 16px 40px;
+                font-size: 1rem;
+                border-radius: 22px;
+            }
+
+            .btn-main:hover {
+                transform: translateY(-4px);
+            }
+
+            .btn-toggle {
+                min-width: 100px;
+                padding: 12px 18px;
+            }
+
+            .settings-card {
+                width: 85%;
+                max-width: 550px;
+                padding: 35px;
+                gap: 18px;
+            }
+
+            .setting-item {
+                padding: 14px 0;
+            }
+
+            #vol-slider {
+                width: 180px;
+            }
+
+            .save-indicator {
+                bottom: 25px;
+                right: 25px;
+                padding: 14px 25px;
+                font-size: 1rem;
+            }
+
+            h1 {
+                font-size: 4rem !important;
+            }
+
+            #win-modal h2 {
+                font-size: 4.5rem !important;
+            }
+
+            #start-modal h1 {
+                font-size: 4rem !important;
+            }
+
+            /* Button effects for desktop */
+            .btn-toggle:hover {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Landscape mode adjustments */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .knowledge-banner {
+                min-height: 50px;
+                padding: 10px;
+            }
+
+            .level-indicator,
+            .combo-counter {
+                top: 50px;
+            }
+
+            #word-bank {
+                max-height: 50px;
+            }
+        }
     </style>
 </head>
 <body class="theme-neon">
@@ -456,7 +854,7 @@
     <!-- START MODAL -->
     <div id="start-modal" class="modal">
         <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v17.1</p>
+        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v18.0</p>
         <div style="margin-bottom: 30px; font-size: 0.95rem; opacity: 0.8;">
             <p id="txt-max-score">Mejor puntuación: <strong id="max-score-val">0</strong></p>
         </div>
@@ -520,7 +918,7 @@
     <div class="selection-preview" id="selection-preview">...</div>
     <div class="knowledge-banner" id="knowledge-text">Preparando sabiduría...</div>
     <div id="game-board"></div>
-    <div id="word-bank" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 12px; max-height: 80px; overflow-y: auto;"></div>
+    <div id="word-bank"></div>
 
     <!-- BUTTONS -->
     <div style="display:flex; gap:15px; margin-top:auto; padding-bottom:20px; flex-wrap: wrap; justify-content: center;">
@@ -551,41 +949,6 @@
     <audio id="snd-lose" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
 
     <script>
-        // ============================================
-        // AUDIO GENERATION & SYNTHESIS
-        // ============================================
-        function generateSoftSuccessSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const now = audioContext.currentTime;
-                
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                const filter = audioContext.createBiquadFilter();
-                
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioContext.destination);
-                
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-                osc.frequency.exponentialRampToValueAtTime(500, now + 0.3);
-                
-                gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(2000, now);
-                filter.frequency.exponentialRampToValueAtTime(1000, now + 0.3);
-                
-                osc.start(now);
-                osc.stop(now + 0.3);
-            } catch(e) {
-                console.log('Audio synthesis not available');
-            }
-        }
-
         // ============================================
         // INTERNATIONALIZATION (i18n)
         // ============================================
@@ -924,7 +1287,7 @@
         }
 
         // ============================================
-        // GAME LOGIC - FIXED VERSION
+        // GAME LOGIC
         // ============================================
         function loadLevel() {
             const size = Math.min(8 + config.currentLvl, 12);
@@ -1009,7 +1372,8 @@
                     return false;
                 }
                 
-                if(matrix[newRow][newCol] && matrix[newRow][newCol] !== word[i]) {
+                const cell = matrix[newRow][newCol];
+                if(cell && cell !== word[i]) {
                     return false;
                 }
             }
@@ -1018,75 +1382,64 @@
         }
 
         function renderGrid(size, activeWords) {
-            const board = document.getElementById('game-board');
-            board.innerHTML = '';
-            board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            const b = document.getElementById('game-board');
+            b.innerHTML = '';
+            b.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
             
             for(let r = 0; r < size; r++) {
                 for(let c = 0; c < size; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.innerText = matrix[r][c];
-                    cell.dataset.r = r;
-                    cell.dataset.c = c;
-                    
-                    cell.onpointerdown = (e) => {
+                    const el = document.createElement('div');
+                    el.className = 'cell';
+                    el.innerText = matrix[r][c];
+                    el.dataset.r = r;
+                    el.dataset.c = c;
+                    el.onpointerdown = (e) => {
                         isSwiping = true;
-                        select(cell);
-                        cell.releasePointerCapture(e.pointerId);
+                        select(el);
+                        el.releasePointerCapture(e.pointerId);
                     };
-                    
-                    cell.onpointerenter = () => {
-                        if(isSwiping) select(cell);
+                    el.onpointerenter = () => {
+                        if(isSwiping) select(el);
                     };
-                    
-                    board.appendChild(cell);
+                    b.appendChild(el);
                 }
             }
             
             const bank = document.getElementById('word-bank');
             bank.innerHTML = '';
-            
-            activeWords.forEach(word => {
+            activeWords.forEach(w => {
                 const tag = document.createElement('div');
                 tag.className = 'word-tag';
-                tag.id = 'tag-' + word;
-                tag.innerText = word;
+                tag.id = 'tag-' + w;
+                tag.innerText = w;
                 bank.appendChild(tag);
             });
             
-            window.onpointerup = () => {
-                isSwiping = false;
-            };
+            window.onpointerup = () => isSwiping = false;
         }
 
-        function select(cell) {
-            if(cell.classList.contains('found')) return;
+        function select(el) {
+            if(el.classList.contains('found')) return;
             
-            if(!selection.includes(cell)) {
-                cell.classList.add('active');
-                selection.push(cell);
-                
-                if(config.vib && navigator.vibrate) {
-                    navigator.vibrate(15);
-                }
-                
+            if(!selection.includes(el)) {
+                el.classList.add('active');
+                selection.push(el);
+                if(config.vib && navigator.vibrate) navigator.vibrate(15);
                 check();
             } else if(!isSwiping) {
-                cell.classList.remove('active');
-                selection = selection.filter(item => item !== cell);
+                el.classList.remove('active');
+                selection = selection.filter(i => i !== el);
             }
             
-            const preview = selection.map(c => c.innerText).join('') || i18n[config.lang].tap;
-            document.getElementById('selection-preview').innerText = preview;
+            document.getElementById('selection-preview').innerText = 
+                selection.map(c => c.innerText).join('') || i18n[config.lang].tap;
         }
 
         function check() {
             const current = selection.map(c => c.innerText).join('');
             const reversed = current.split('').reverse().join('');
-            
-            // IMPORTANTE: Buscar en activeWordsInGame que son las palabras del nivel actual
             let found = null;
+            
             for(let word of activeWordsInGame) {
                 if((word === current || word === reversed) && !foundWords.includes(word)) {
                     found = word;
@@ -1096,110 +1449,72 @@
             
             if(found) {
                 foundWords.push(found);
-                config.comboCount++;
-                
-                selection.forEach(cell => {
-                    cell.classList.remove('active');
-                    cell.classList.add('found');
+                selection.forEach(c => {
+                    c.classList.remove('active');
+                    c.classList.add('found');
                 });
-                
-                const tag = document.getElementById('tag-' + found);
-                if(tag) tag.classList.add('done');
+                document.getElementById('tag-' + found).classList.add('done');
                 
                 if(config.sound) {
-                    generateSoftSuccessSound();
+                    document.getElementById('snd-success').play().catch(() => {});
                 }
                 
                 const data = KNOWLEDGE_DB.find(d => d[config.lang] === found);
-                const knowledgeKey = 'info' + config.lang;
-                document.getElementById('knowledge-text').innerText = "💡 " + data[knowledgeKey];
+                document.getElementById('knowledge-text').innerText = "💡 " + data["info" + config.lang];
                 
-                const baseScore = 200;
-                const comboBonus = config.comboCount > 1 ? (config.comboCount - 1) * 50 : 0;
-                const totalPoints = baseScore + comboBonus;
-                
-                config.score += totalPoints;
+                config.score += 200;
                 document.getElementById('score-ui').innerText = config.score;
-                
-                if(config.comboCount > 1) {
-                    showComboAnimation();
-                }
-                
-                document.getElementById('combo-count').innerText = config.comboCount;
-                
                 selection = [];
                 updateProgress();
                 
-                // IMPORTANTE: Verificar si se encontraron TODAS las palabras del nivel actual
-                console.log('Found:', foundWords.length, 'Total words:', activeWordsInGame.length);
                 if(foundWords.length === activeWordsInGame.length) {
                     triggerWin();
                 }
             }
         }
 
-        function showComboAnimation() {
-            const comboEl = document.getElementById('combo-count');
-            comboEl.classList.remove('active');
-            void comboEl.offsetWidth;
-            comboEl.classList.add('active');
-        }
-
         function triggerAIHint() {
             const pending = activeWordsInGame.find(w => !foundWords.includes(w));
-            
             if(pending && config.score >= 100) {
                 config.score -= 100;
                 document.getElementById('score-ui').innerText = config.score;
                 
-                wordCoords[pending].forEach(pos => {
-                    const cell = document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`);
-                    
+                wordCoords[pending].forEach(p => {
+                    const cell = document.querySelector(`.cell[data-r="${p.r}"][data-c="${p.c}"]`);
                     if(cell) {
-                        cell.style.background = 'var(--ai)';
-                        setTimeout(() => {
-                            cell.style.background = '';
-                        }, 2000);
+                        cell.style.background = "var(--ai)";
+                        setTimeout(() => cell.style.background = "", 2000);
                     }
                 });
             }
         }
 
-        function clearSelection() {
-            selection.forEach(cell => cell.classList.remove('active'));
-            selection = [];
-            document.getElementById('selection-preview').innerText = i18n[config.lang].tap;
-        }
-
         function updateProgress() {
             const progress = (foundWords.length / activeWordsInGame.length) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-bar').style.width = progress + "%";
         }
 
         function triggerWin() {
             clearInterval(timerInterval);
-            
             if(config.sound) {
-                document.getElementById('snd-goal').play();
+                document.getElementById('snd-goal').play().catch(() => {});
             }
+            
+            confetti({
+                particleCount: 200,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
             
             if(config.score > config.maxScore) {
                 config.maxScore = config.score;
                 localStorage.setItem('maxScore', config.maxScore);
-                document.getElementById('max-score-val').innerText = config.maxScore;
             }
             
-            confetti({
-                particleCount: 250,
-                spread: 100,
-                origin: { y: 0.6 }
-            });
-            
+            document.getElementById('level-score').innerText = config.score;
             setTimeout(() => {
-                document.getElementById('level-score').innerText = config.score;
                 document.getElementById('win-modal').style.display = 'flex';
-                saveGameState();
-            }, 800);
+            }, 1000);
         }
 
         function nextLevel() {
@@ -1209,33 +1524,26 @@
             loadLevel();
         }
 
+        function clearSelection() {
+            selection.forEach(c => c.classList.remove('active'));
+            selection = [];
+            document.getElementById('selection-preview').innerText = i18n[config.lang].tap;
+        }
+
         function startTimer() {
             clearInterval(timerInterval);
-            
             timerInterval = setInterval(() => {
                 timeLeft--;
-                
-                const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-                const seconds = (timeLeft % 60).toString().padStart(2, '0');
-                
-                document.getElementById('timer-ui').innerText = `⏱️ ${minutes}:${seconds}`;
-                
-                if(timeLeft <= 20 && timeLeft > 0) {
-                    document.getElementById('timer-ui').style.color = '#ff3e3e';
-                    if(config.vib && navigator.vibrate && timeLeft % 2 === 0) {
-                        navigator.vibrate(50);
-                    }
-                } else if(timeLeft > 20) {
-                    document.getElementById('timer-ui').style.color = '';
-                }
+                let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                let s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timer-ui').innerText = `⏱️ ${m}:${s}`;
                 
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
                     if(config.sound) {
-                        document.getElementById('snd-lose').play();
+                        document.getElementById('snd-lose').play().catch(() => {});
                     }
-                    saveGameState();
-                    setTimeout(() => location.reload(), 1500);
+                    location.reload();
                 }
             }, 1000);
         }
