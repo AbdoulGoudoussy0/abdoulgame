@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>AbdoulGame Stadium PRO</title>
+    <title>AbdoulGame Global PRO</title>
     
-    <!-- ICONO ESPECTACULAR PARA TU TABLET -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
     <link rel="manifest" href="manifest.json">
@@ -16,7 +15,10 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        :root { --p: #00f2ff; --s: #7000ff; --ai: #ff00c8; --success: #00ff88; --bg: #020617; }
+        :root { 
+            --p: #00f2ff; --s: #7000ff; --ai: #ff00c8; --success: #00ff88; --error: #ff3e3e; --bg: #020617; 
+            --glass: rgba(255, 255, 255, 0.05);
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body {
             font-family: 'Outfit', sans-serif; background: var(--bg);
@@ -24,140 +26,122 @@
             color: white; margin: 0; display: flex; flex-direction: column;
             align-items: center; height: 100dvh; overflow: hidden; user-select: none;
         }
-        .top-bar { width: 100%; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
-        .stat-badge { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 12px; border: 1px solid var(--p); font-weight: 900; }
-        .ai-status { width: 90%; margin: 10px 0; padding: 10px; background: rgba(255, 0, 200, 0.05); border-left: 4px solid var(--ai); border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 10px; }
-        #game-board { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: grid; gap: 4px; touch-action: none; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .cell { width: clamp(34px, 9vw, 48px); height: clamp(34px, 9vw, 48px); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; border-radius: 8px; background: rgba(255,255,255,0.05); transition: 0.2s; color: #cbd5e1; }
-        .cell.active { background: var(--s) !important; color: white; transform: scale(1.1); box-shadow: 0 0 15px var(--s); }
+        .top-bar { width: 100%; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); z-index: 10; }
+        .stat-badge { background: var(--glass); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--p); font-weight: 900; font-size: 0.9rem; }
+        .btn-icon { background: var(--glass); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .selection-preview { width: 100%; height: 40px; background: rgba(112, 0, 255, 0.2); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--p); font-size: 1.2rem; border-bottom: 1px solid var(--s); text-transform: uppercase; }
+        #game-board { margin: 15px; background: var(--glass); padding: 6px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: grid; gap: 4px; transition: transform 0.1s; }
+        .cell { width: clamp(35px, 9.5vw, 50px); height: clamp(35px, 9.5vw, 50px); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; border-radius: 8px; background: rgba(255,255,255,0.05); color: #cbd5e1; transition: 0.2s; cursor: pointer; }
+        .cell.selected { background: var(--s) !important; color: white; transform: scale(1.1); box-shadow: 0 0 15px var(--s); }
         .cell.found { background: var(--success) !important; color: #000; box-shadow: 0 0 10px var(--success); }
-        .cell.hint-glow { background: var(--ai) !important; color: white !important; animation: pulse 0.5s infinite alternate; }
-        @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
-        .word-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; justify-content: center; max-width: 500px; }
-        .tag { padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1); }
-        .tag.done { background: var(--success); color: #000; opacity: 0.3; text-decoration: line-through; }
-        .btn-main { background: linear-gradient(135deg, var(--s), var(--p)); color: white; padding: 16px 40px; border-radius: 20px; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.4); margin-top: auto; margin-bottom: 25px; text-transform: uppercase; }
         .modal { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; text-align: center; padding: 20px; }
+        .settings-modal { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--p); border-radius: 30px; width: 90%; max-width: 400px; padding: 25px; display: none; flex-direction: column; gap: 15px; z-index: 3000; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.9rem; }
+        .toggle-btn { padding: 8px 15px; border-radius: 10px; border: 1px solid var(--p); background: none; color: white; cursor: pointer; font-weight: bold; min-width: 60px; }
+        .toggle-btn.active { background: var(--p); color: black; }
+        .btn-main { background: linear-gradient(135deg, var(--s), var(--p)); color: white; padding: 14px 30px; border-radius: 15px; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 8px 25px rgba(0, 242, 255, 0.4); text-transform: uppercase; }
+        .shake { animation: shakeAnim 0.2s ease-in-out; }
+        @keyframes shakeAnim { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
 <body>
+
     <div id="start-modal" class="modal">
         <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p style="opacity: 0.6; margin-bottom: 40px;">STADIUM PRO EDITION</p>
-        <button class="btn-main" onclick="startApp()">¡ENTRAR AL ESTADIO!</button>
+        <p id="txt-subtitle" style="opacity: 0.6; margin-bottom: 40px;">GLOBAL EDITION v8.0</p>
+        <button class="btn-main" onclick="startApp()" id="txt-play">PLAY</button>
     </div>
+
+    <div id="settings-modal" class="modal" style="background: rgba(0,0,0,0.8); display:none;">
+        <div class="settings-modal" style="display: flex;">
+            <h2 id="txt-settings-title" style="margin: 0; color: var(--p);">SETTINGS</h2>
+            <div class="setting-row"> <span id="txt-vol">Volume</span> <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5" onchange="updateSettings()"> </div>
+            <div class="setting-row"> <span id="txt-vib">Vibration</span> <button class="toggle-btn active" id="vib-toggle" onclick="toggleVib()">ON</button> </div>
+            <div class="setting-row"> <span id="txt-lang">Language</span> <button class="toggle-btn" id="lang-toggle" onclick="toggleLang()" style="font-size: 1.2rem;">🇪🇸</button> </div>
+            <div class="setting-row"> <span id="txt-theme">Theme</span> <button class="toggle-btn" id="theme-toggle" onclick="toggleTheme()">NEON</button> </div>
+            <button class="btn-main" onclick="closeSettings()" id="txt-close">CLOSE</button>
+        </div>
+    </div>
+
     <div class="top-bar">
-        <div class="stat-badge" id="timer-ui" style="color: var(--p);">⏱️ 02:00</div>
+        <div class="stat-badge" id="timer-ui">⏱️ 02:00</div>
+        <button class="btn-icon" onclick="openSettings()">⚙️</button>
         <div class="stat-badge">⭐ <span id="score-ui">0</span></div>
     </div>
-    <div class="ai-status">
-        <div style="width: 12px; height: 12px; background: var(--ai); border-radius: 50%; box-shadow: 0 0 10px var(--ai);"></div>
-        <div id="ai-msg">¡Hola Abdoul! El estadio espera tu gran jugada.</div>
-    </div>
+
+    <div class="selection-preview" id="selection-preview">...</div>
     <div id="game-board"></div>
-    <div class="word-list" id="word-list"></div>
-    <button class="btn-main" onclick="triggerAIHint()" style="padding: 12px 25px; font-size: 1rem;">🤖 ESCANEO IA (-100 ⭐)</button>
-    <div id="win-modal" class="modal" style="display: none;">
-        <h2 style="font-size: 4rem; color: var(--success); margin: 0;">¡GOOOOL!</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 30px;">¡Ovación total en el estadio!</p>
-        <button class="btn-main" onclick="nextLevel()">Siguiente Partido</button>
+    <div id="word-list" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:10px;"></div>
+
+    <div style="display: flex; gap: 10px; margin-top: auto; padding-bottom: 20px;">
+        <button class="btn-main" onclick="triggerAIHint()" style="font-size: 0.75rem; padding: 10px 20px;" id="txt-hint">HINT</button>
+        <button class="btn-main" onclick="clearSelection()" style="background: var(--error); font-size: 0.75rem; padding: 10px 20px;" id="txt-clear">CLEAR</button>
     </div>
+
+    <div id="win-modal" class="modal" style="display: none;">
+        <h2 style="font-size: 4rem; color: var(--success); margin: 0;" id="txt-win-title">GOAL!</h2>
+        <p id="txt-win-desc">Masterful Victory!</p>
+        <button class="btn-main" onclick="nextLevel()" id="txt-next">NEXT</button>
+    </div>
+
     <audio id="bg-music" loop src="https://cdn.pixabay.com/audio/2022/03/10/audio_c33671f652.mp3"></audio>
     <audio id="snd-win" src="https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3"></audio>
     <audio id="snd-lose" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
+
     <script>
-        const LEVELS = [
-            { grid: 8, words: ["ABDOUL", "EXITO", "GOL", "PRO", "WEB"] },
-            { grid: 10, words: ["PREMIUM", "ESTADIO", "MASTER", "STARS", "GENIO"] }
-        ];
-        let currentLvl = 0, score = 0, timeLeft = 120, timerInterval, foundWords = [], matrix = [], wordCoords = {}, isDragging = false, selection = [];
-        function startApp() { document.getElementById('start-modal').style.display = 'none'; document.getElementById('bg-music').volume = 0.2; document.getElementById('bg-music').play(); loadLevel(); }
-        function loadLevel() { 
-            const config = LEVELS[currentLvl] || LEVELS[LEVELS.length-1];
-            foundWords = []; wordCoords = {}; timeLeft = 120;
-            document.getElementById('win-modal').style.display = 'none';
-            generateBoard(config); renderBoard(config); startTimer();
+        const langs = ['ES', 'EN', 'FR', 'PT', 'IT', 'DE'];
+        const flags = { ES: '🇪🇸', EN: '🇺🇸', FR: '🇫🇷', PT: '🇧🇷', IT: '🇮🇹', DE: '🇩🇪' };
+        let config = { vol: 0.5, vib: true, lang: 'ES', theme: 'NEON' };
+
+        const i18n = {
+            ES: { subtitle: "EDICIÓN GLOBAL v8.0", play: "¡JUGAR!", settings: "AJUSTES", vol: "Volumen", vib: "Vibración", lang: "Idioma", theme: "Tema", close: "CERRAR", hint: "PISTA (-100 ⭐)", clear: "BORRAR", next: "SIGUIENTE", preview: "Toca una letra", win: "¡Victoria!", winTitle: "¡GOOOOL!" },
+            EN: { subtitle: "GLOBAL EDITION v8.0", play: "PLAY!", settings: "SETTINGS", vol: "Volume", vib: "Vibration", lang: "Language", theme: "Theme", close: "CLOSE", hint: "HINT (-100 ⭐)", clear: "CLEAR", next: "NEXT", preview: "Tap a letter", win: "Victory!", winTitle: "GOAL!" },
+            FR: { subtitle: "ÉDITION GLOBALE v8.0", play: "JOUER!", settings: "RÉGLAGES", vol: "Volume", vib: "Vibration", lang: "Langue", theme: "Thème", close: "FERMER", hint: "INDICE (-100 ⭐)", clear: "EFFACER", next: "SUIVANT", preview: "Appuyez sur una lettre", win: "Victoire!", winTitle: "BUT!" },
+            PT: { subtitle: "EDIÇÃO GLOBAL v8.0", play: "JOGAR!", settings: "AJUSTES", vol: "Volume", vib: "Vibração", lang: "Idioma", theme: "Tema", close: "FECHAR", hint: "DICA (-100 ⭐)", clear: "LIMPAR", next: "PRÓXIMO", preview: "Toque numa letra", win: "Vitória!", winTitle: "GOLO!" },
+            IT: { subtitle: "EDIZIONE GLOBALE v8.0", play: "GIOCA!", settings: "IMPOSTAZIONI", vol: "Volume", vib: "Vibrazione", lang: "Lingua", theme: "Tema", close: "CHIUDI", hint: "SUGGERIMENTO (-100 ⭐)", clear: "CANCELLA", next: "AVANTI", preview: "Tocca una lettera", win: "Vittoria!", winTitle: "GOL!" },
+            DE: { subtitle: "GLOBALE EDITION v8.0", play: "SPIELEN!", settings: "EINSTELLUNGEN", vol: "Volumen", vib: "Vibration", lang: "Sprache", theme: "Thema", close: "SCHLIESSEN", hint: "HINWEIS (-100 ⭐)", clear: "LÖSCHEN", next: "WEITER", preview: "Tippe einen Buchstaben", win: "Sieg!", winTitle: "TOR!" }
+        };
+
+        let currentLvl = 0, score = 0, timeLeft = 120, timerInterval, foundWords = [], matrix = [], wordCoords = {}, selection = [];
+        const LEVELS = [{ grid: 8, words: ["ABDOUL", "EXITO", "GOL", "PRO", "WEB"] }, { grid: 10, words: ["PREMIUM", "MASTER", "STARS", "GENIO", "STADIUM"] }];
+
+        function startApp() { document.getElementById('start-modal').style.display='none'; applySettings(); document.getElementById('bg-music').play(); loadLevel(); }
+        function openSettings() { document.getElementById('settings-modal').style.display='flex'; }
+        function closeSettings() { document.getElementById('settings-modal').style.display='none'; }
+        function updateSettings() { config.vol = document.getElementById('vol-slider').value; applySettings(); }
+        function toggleVib() { config.vib = !config.vib; document.getElementById('vib-toggle').innerText = config.vib ? "ON" : "OFF"; document.getElementById('vib-toggle').classList.toggle('active'); }
+        function toggleLang() { 
+            let idx = (langs.indexOf(config.lang) + 1) % langs.length;
+            config.lang = langs[idx];
+            document.getElementById('lang-toggle').innerText = flags[config.lang];
+            applyLanguage();
         }
-        function generateBoard(config) {
-            let placed = false;
-            while(!placed) {
-                matrix = Array(config.grid).fill().map(() => Array(config.grid).fill(''));
-                placed = true;
-                for(let word of config.words) { if(!placeWord(word, config.grid)) { placed = false; break; } }
-            }
-            for(let r=0; r<config.grid; r++) for(let c=0; c<config.grid; c++) if(!matrix[r][c]) matrix[r][c] = String.fromCharCode(65 + Math.floor(Math.random()*26));
+        function toggleTheme() { config.theme = config.theme === 'NEON' ? 'CLASSIC' : 'NEON'; document.getElementById('theme-toggle').innerText = config.theme; document.body.style.backgroundImage = config.theme === 'NEON' ? "radial-gradient(circle at 50% 0%, #1e1b4b, #020617)" : "none"; document.body.style.backgroundColor = config.theme === 'NEON' ? "" : "#111"; }
+        function applySettings() { document.getElementById('bg-music').volume = config.vol * 0.2; document.getElementById('snd-win').volume = config.vol; document.getElementById('snd-lose').volume = config.vol; }
+        function applyLanguage() {
+            const t = i18n[config.lang];
+            document.getElementById('txt-subtitle').innerText = t.subtitle; document.getElementById('txt-play').innerText = t.play;
+            document.getElementById('txt-settings-title').innerText = t.settings; document.getElementById('txt-vol').innerText = t.vol;
+            document.getElementById('txt-vib').innerText = t.vib; document.getElementById('txt-lang').innerText = t.lang;
+            document.getElementById('txt-theme').innerText = t.theme; document.getElementById('txt-close').innerText = t.close;
+            document.getElementById('txt-hint').innerText = t.hint; document.getElementById('txt-clear').innerText = t.clear;
+            document.getElementById('txt-next').innerText = t.next; document.getElementById('txt-win-desc').innerText = t.win;
+            document.getElementById('txt-win-title').innerText = t.winTitle;
+            if(selection.length === 0) document.getElementById('selection-preview').innerText = t.preview;
         }
-        function placeWord(word, size) {
-            const dirs = [[0,1], [1,0], [1,1], [1,-1]];
-            for(let i=0; i<100; i++) {
-                const d = dirs[Math.floor(Math.random()*dirs.length)], r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size);
-                if(canPlace(word, r, c, d, size)) {
-                    wordCoords[word] = [];
-                    for(let j=0; j<word.length; j++) {
-                        const nr = r + j*d[0], nc = c + j*d[1];
-                        matrix[nr][nc] = word[j];
-                        wordCoords[word].push({r: nr, c: nc});
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-        function canPlace(w, r, c, d, s) {
-            for(let i=0; i<w.length; i++) {
-                let nr = r + i*d[0], nc = c + i*d[1];
-                if(nr < 0 || nr >= s || nc < 0 || nc >= s || (matrix[nr][nc] && matrix[nr][nc] !== w[i])) return false;
-            }
-            return true;
-        }
-        function renderBoard(config) {
-            const board = document.getElementById('game-board');
-            board.innerHTML = ''; board.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`;
-            for(let r=0; r<config.grid; r++) {
-                for(let c=0; c<config.grid; c++) {
-                    const el = document.createElement('div'); el.className = 'cell'; el.innerText = matrix[r][c]; el.dataset.r = r; el.dataset.c = c;
-                    el.onpointerdown = e => { isDragging = true; selection = [el]; el.classList.add('active'); if(navigator.vibrate) navigator.vibrate(15); el.releasePointerCapture(e.pointerId); };
-                    el.onpointerenter = () => { if(isDragging && !selection.includes(el)) { selection.push(el); el.classList.add('active'); if(navigator.vibrate) navigator.vibrate(10); } };
-                    board.appendChild(el);
-                }
-            }
-            window.onpointerup = endSelection;
-            const list = document.getElementById('word-list'); list.innerHTML = '';
-            config.words.forEach(w => list.innerHTML += `<div class="tag" id="tag-${w}">${w}</div>`);
-        }
-        function endSelection() {
-            if(!isDragging) return; isDragging = false;
-            const word = selection.map(c => c.innerText).join(''), rev = word.split('').reverse().join(''), config = LEVELS[currentLvl], found = config.words.find(w => w === word || w === rev);
-            if(found && !foundWords.includes(found)) {
-                foundWords.push(found); selection.forEach(c => { c.classList.remove('active'); c.classList.add('found'); });
-                document.getElementById('tag-'+found).classList.add('done'); score += 150; document.getElementById('score-ui').innerText = score;
-                if(foundWords.length === config.words.length) triggerWin();
-            } else selection.forEach(c => c.classList.remove('active'));
-            selection = [];
-        }
-        function triggerAIHint() {
-            if(score < 100) return alert("¡Necesitas 100 estrellas!");
-            score -= 100; document.getElementById('score-ui').innerText = score;
-            const pending = LEVELS[currentLvl].words.find(w => !foundWords.includes(w));
-            wordCoords[pending].forEach(pos => {
-                const el = document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`);
-                el.classList.add('hint-glow'); setTimeout(() => el.classList.remove('hint-glow'), 3000);
-            });
-        }
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--; const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
-                document.getElementById('timer-ui').innerText = `⏱️ ${m}:${s}`;
-                if(timeLeft <= 0) { clearInterval(timerInterval); document.getElementById('snd-lose').play(); location.reload(); }
-            }, 1000);
-        }
-        function triggerWin() {
-            clearInterval(timerInterval); document.getElementById('snd-win').play();
-            confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
-            setTimeout(() => document.getElementById('win-modal').style.display = 'flex', 1000);
-        }
+        function triggerHaptic() { if(!config.vib) return; if(navigator.vibrate) navigator.vibrate(20); else { document.getElementById('game-board').classList.add('shake'); setTimeout(()=>document.getElementById('game-board').classList.remove('shake'), 200); } }
+        function loadLevel() { const c = LEVELS[currentLvl] || LEVELS[LEVELS.length-1]; foundWords = []; wordCoords = {}; timeLeft = 120; selection = []; document.getElementById('selection-preview').innerText = i18n[config.lang].preview; document.getElementById('win-modal').style.display = 'none'; generateBoard(c); renderBoard(c); startTimer(); }
+        function generateBoard(config) { let placed = false; while(!placed) { matrix = Array(config.grid).fill().map(() => Array(config.grid).fill('')); placed = true; for(let word of config.words) { if(!placeWord(word, config.grid)) { placed = false; break; } } } for(let r=0; r<config.grid; r++) for(let c=0; c<config.grid; c++) if(!matrix[r][c]) matrix[r][c] = String.fromCharCode(65 + Math.floor(Math.random()*26)); }
+        function placeWord(word, size) { const dirs = [[0,1], [1,0], [1,1], [1,-1]]; for(let i=0; i<100; i++) { const d = dirs[Math.floor(Math.random()*dirs.length)], r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size); if(canPlace(word, r, c, d, size)) { wordCoords[word] = []; for(let j=0; j<word.length; j++) { const nr = r + j*d[0], nc = c + j*d[1]; matrix[nr][nc] = word[j]; wordCoords[word].push({r: nr, c: nc}); } return true; } } return false; }
+        function canPlace(w, r, c, d, s) { for(let i=0; i<w.length; i++) { let nr = r + i*d[0], nc = c + i*d[1]; if(nr < 0 || nr >= s || nc < 0 || nc >= s || (matrix[nr][nc] && matrix[nr][nc] !== w[i])) return false; } return true; }
+        function renderBoard(config) { const board = document.getElementById('game-board'); board.innerHTML = ''; board.style.gridTemplateColumns = `repeat(${config.grid}, 1fr)`; for(let r=0; r<config.grid; r++) for(let c=0; c<config.grid; c++) { const el = document.createElement('div'); el.className = 'cell'; el.innerText = matrix[r][c]; el.dataset.r = r; el.dataset.c = c; el.onclick = () => handleCellClick(el); board.appendChild(el); } const list = document.getElementById('word-list'); list.innerHTML = ''; config.words.forEach(w => list.innerHTML += `<div class="tag" id="tag-${w}">${w}</div>`); applyLanguage(); }
+        function handleCellClick(el) { if(el.classList.contains('found')) return; triggerHaptic(); if(selection.includes(el)) { el.classList.remove('selected'); selection = selection.filter(item => item !== el); } else { el.classList.add('selected'); selection.push(el); } const cur = selection.map(c => c.innerText).join(''), rev = cur.split('').reverse().join(''), found = LEVELS[currentLvl].words.find(w => w === cur || w === rev); if(found && !foundWords.includes(found)) { foundWords.push(found); selection.forEach(c => { c.classList.remove('selected'); c.classList.add('found'); }); document.getElementById('tag-'+found).classList.add('done'); score += 150; document.getElementById('score-ui').innerText = score; selection = []; document.getElementById('selection-preview').innerText = i18n[config.lang].winTitle; if(foundWords.length === LEVELS[currentLvl].words.length) triggerWin(); } else document.getElementById('selection-preview').innerText = cur || i18n[config.lang].preview; }
+        function clearSelection() { selection.forEach(c => c.classList.remove('selected')); selection = []; document.getElementById('selection-preview').innerText = i18n[config.lang].preview; }
+        function triggerAIHint() { if(score < 100) return; score -= 100; document.getElementById('score-ui').innerText = score; const pending = LEVELS[currentLvl].words.find(w => !foundWords.includes(w)); wordCoords[pending].forEach(pos => { const el = document.querySelector(`.cell[data-r="${pos.r}"][data-c="${pos.c}"]`); el.classList.add('hint-glow'); setTimeout(() => el.classList.remove('hint-glow'), 3000); }); }
+        function startTimer() { clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0'); document.getElementById('timer-ui').innerText = `⏱️ ${m}:${s}`; if(timeLeft <= 0) { clearInterval(timerInterval); document.getElementById('snd-lose').play(); location.reload(); } }, 1000); }
+        function triggerWin() { clearInterval(timerInterval); document.getElementById('snd-win').play(); confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } }); setTimeout(() => document.getElementById('win-modal').style.display = 'flex', 1000); }
         function nextLevel() { currentLvl++; loadLevel(); }
+        window.onload = () => applyLanguage();
     </script>
 </body>
 </html>
