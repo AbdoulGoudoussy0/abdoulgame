@@ -60,6 +60,137 @@
             transition: all 0.6s ease;
         }
 
+        /* ========================================
+           SPLASH SCREEN STYLES
+           ======================================== */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0a0e27, #1a0033, #0a0e27);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            animation: splashFadeIn 0.6s ease;
+        }
+
+        @keyframes splashFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .splash-logo {
+            width: clamp(150px, 50vw, 300px);
+            height: clamp(150px, 50vw, 300px);
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><style>.fire{fill:none;stroke:url(%23fireGradient);stroke-width:8;stroke-linecap:round;stroke-linejoin:round;}.fire-fill{fill:url(%23fireGradient);}.game{fill:none;stroke:%2300f2ff;stroke-width:2;}.gradient-neon{fill:url(%23neonGradient);}</style><linearGradient id="fireGradient" x1="0%25" y1="100%25" x2="0%25" y2="0%25"><stop offset="0%25" style="stop-color:%23ff00c8;stop-opacity:1"/><stop offset="50%25" style="stop-color:%23ff6b00;stop-opacity:1"/><stop offset="100%25" style="stop-color:%2300f2ff;stop-opacity:1"/></linearGradient><linearGradient id="neonGradient" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" style="stop-color:%2300f2ff;stop-opacity:1"/><stop offset="50%25" style="stop-color:%237000ff;stop-opacity:1"/><stop offset="100%25" style="stop-color:%23ff00c8;stop-opacity:1"/></linearGradient></defs><circle cx="100" cy="100" r="90" class="gradient-neon" opacity="0.2"/><circle cx="100" cy="100" r="85" class="game" opacity="0.5"/><path d="M 100 30 Q 70 50 60 90 Q 55 110 70 120 Q 85 130 100 125 Q 115 130 130 120 Q 145 110 140 90 Q 130 50 100 30 Z" class="fire-fill"/><circle cx="85" cy="70" r="12" class="gradient-neon"/><circle cx="115" cy="70" r="12" class="gradient-neon"/><path d="M 90 95 L 110 95" stroke="%2300f2ff" stroke-width="3" stroke-linecap="round"/><rect x="70" y="110" width="60" height="8" rx="4" class="game"/><g opacity="0.6"><circle cx="40" cy="30" r="3" fill="%2300f2ff"/><circle cx="160" cy="40" r="4" fill="%23ff6b00"/><circle cx="30" cy="120" r="2.5" fill="%23ff00c8"/><circle cx="170" cy="130" r="3.5" fill="%2300f2ff"/><circle cx="50" cy="160" r="2" fill="%23ff6b00"/></g></svg>') no-repeat center;
+            background-size: contain;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.6)) drop-shadow(0 0 40px rgba(255, 0, 200, 0.4));
+            animation: splashPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes splashPulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.6)) drop-shadow(0 0 40px rgba(255, 0, 200, 0.4));
+            }
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 30px rgba(0, 242, 255, 0.8)) drop-shadow(0 0 60px rgba(255, 0, 200, 0.6));
+            }
+        }
+
+        .splash-title {
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #00f2ff, #7000ff, #ff00c8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: 2px;
+            animation: splashGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes splashGlow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(0, 242, 255, 0.8), 0 0 30px rgba(255, 0, 200, 0.6);
+            }
+        }
+
+        .splash-subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 3px;
+            opacity: 0.8;
+        }
+
+        .loading-bar {
+            width: clamp(200px, 70vw, 300px);
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid var(--p);
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--p), var(--s), var(--ai));
+            width: 0%;
+            animation: loading 2s ease-in-out forwards;
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--p);
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0%;
+            }
+            90% {
+                width: 90%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1px;
+        }
+
+        /* ========================================
+           MAIN APP STYLES (resto igual)
+           ======================================== */
+
         .progress-container { 
             width: 100%; 
             height: 6px; 
@@ -922,6 +1053,19 @@
 </head>
 <body class="theme-neon">
 
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-container">
+            <div class="splash-logo"></div>
+            <h1 class="splash-title">AbdoulGame</h1>
+            <p class="splash-subtitle">ULTIMATE POLYGLOT</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">CARGANDO...</p>
+        </div>
+    </div>
+
     <div class="progress-container"><div id="progress-bar"></div></div>
 
     <!-- LEVEL INDICATOR -->
@@ -932,7 +1076,7 @@
     <!-- START MODAL -->
     <div id="start-modal" class="modal">
         <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v19.0</p>
+        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v20.0</p>
         <div style="margin-bottom: 30px; font-size: 0.95rem; opacity: 0.8;">
             <p id="txt-max-score">Mejor puntuación: <strong id="max-score-val">0</strong></p>
         </div>
@@ -1033,6 +1177,19 @@
 
     <script>
         // ============================================
+        // SPLASH SCREEN HANDLER
+        // ============================================
+        function hideSplashScreen() {
+            const splash = document.getElementById('splash-screen');
+            setTimeout(() => {
+                splash.classList.add('fade-out');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 800);
+            }, 2500);
+        }
+
+        // ============================================
         // DEVICE DETECTION & ADAPTATION
         // ============================================
         function detectDevice() {
@@ -1057,21 +1214,25 @@
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         function playTone(frequency, duration, volume = 0.3) {
-            const now = audioContext.currentTime;
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            
-            osc.frequency.setValueAtTime(frequency, now);
-            osc.frequency.exponentialRampToValueAtTime(frequency * 0.8, now + duration);
-            
-            gain.gain.setValueAtTime(volume, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
-            
-            osc.start(now);
-            osc.stop(now + duration);
+            try {
+                const now = audioContext.currentTime;
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.setValueAtTime(frequency, now);
+                osc.frequency.exponentialRampToValueAtTime(frequency * 0.8, now + duration);
+                
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch(e) {
+                console.log('Audio context error:', e);
+            }
         }
 
         function successSound() {
@@ -1279,6 +1440,7 @@
             renderLevelButtons();
             document.getElementById('max-score-val').innerText = config.maxScore;
             document.getElementById('level-num').innerText = config.currentLvl;
+            hideSplashScreen();
         });
 
         function loadPreferences() {
@@ -1336,7 +1498,7 @@
             document.getElementById('start-modal').style.display = 'none';
             updateAudio();
             if(config.sound) {
-                document.getElementById('bg-stadium').play();
+                document.getElementById('bg-stadium').play().catch(() => {});
             }
             applyLanguage();
             loadLevel();
@@ -1456,7 +1618,7 @@
             if(!config.sound) {
                 document.getElementById('bg-stadium').pause();
             } else if(!document.getElementById('start-modal').style.display) {
-                document.getElementById('bg-stadium').play();
+                document.getElementById('bg-stadium').play().catch(() => {});
             }
         }
 
@@ -1742,7 +1904,7 @@
                     clearInterval(timerInterval);
                     document.getElementById('snd-lose').play().catch(() => {});
                     vibrate([200, 100, 200]);
-                    location.reload();
+                    setTimeout(() => location.reload(), 1500);
                 }
             }, 1000);
         }
