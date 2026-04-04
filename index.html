@@ -195,6 +195,7 @@
             color: #000; 
             box-shadow: 0 0 20px var(--success);
             animation: foundPulse 0.6s ease;
+            pointer-events: none;
         }
 
         @keyframes foundPulse {
@@ -236,6 +237,8 @@
             gap: 15px;
             box-shadow: var(--shadow);
             animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes slideUp {
@@ -453,7 +456,7 @@
     <!-- START MODAL -->
     <div id="start-modal" class="modal">
         <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v17.0</p>
+        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v17.1</p>
         <div style="margin-bottom: 30px; font-size: 0.95rem; opacity: 0.8;">
             <p id="txt-max-score">Mejor puntuación: <strong id="max-score-val">0</strong></p>
         </div>
@@ -534,15 +537,16 @@
         <button class="btn-main" onclick="nextLevel()" id="txt-next">SIGUIENTE NIVEL</button>
     </div>
 
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
-    }
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
 
     <!-- AUDIO -->
     <audio id="bg-stadium" loop src="https://cdn.pixabay.com/audio/2022/02/22/audio_d0c6ff1101.mp3"></audio>
     <audio id="snd-goal" src="https://www.myinstants.com/media/sounds/gol-de-messi.mp3"></audio>
-    <audio id="snd-correct" src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAAA="></audio>
     <audio id="snd-success" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <audio id="snd-lose" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
 
@@ -551,35 +555,35 @@
         // AUDIO GENERATION & SYNTHESIS
         // ============================================
         function generateSoftSuccessSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const now = audioContext.currentTime;
-            
-            // Create oscillator for soft tone
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioContext.destination);
-            
-            // Soft, gentle frequencies
-            osc.frequency.setValueAtTime(600, now);
-            osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-            osc.frequency.exponentialRampToValueAtTime(500, now + 0.3);
-            
-            // Smooth envelope
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            
-            // Soft filter
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(2000, now);
-            filter.frequency.exponentialRampToValueAtTime(1000, now + 0.3);
-            
-            osc.start(now);
-            osc.stop(now + 0.3);
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioContext.currentTime;
+                
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                osc.frequency.exponentialRampToValueAtTime(500, now + 0.3);
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2000, now);
+                filter.frequency.exponentialRampToValueAtTime(1000, now + 0.3);
+                
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch(e) {
+                console.log('Audio synthesis not available');
+            }
         }
 
         // ============================================
@@ -728,6 +732,7 @@
         let isSwiping = false;
         let timeLeft = 120;
         let timerInterval;
+        let activeWordsInGame = [];
 
         // ============================================
         // INITIALIZATION
@@ -779,9 +784,10 @@
         }
         
         function setupAutoSave() {
+            if(config.autoSaveInterval) clearInterval(config.autoSaveInterval);
             config.autoSaveInterval = setInterval(() => {
                 saveGameState();
-            }, 30000); // Auto-save every 30 seconds
+            }, 30000);
         }
 
         function saveGameState() {
@@ -918,35 +924,38 @@
         }
 
         // ============================================
-        // GAME LOGIC
+        // GAME LOGIC - FIXED VERSION
         // ============================================
         function loadLevel() {
             const size = Math.min(8 + config.currentLvl, 12);
             foundWords = [];
             wordCoords = {};
             selection = [];
-            timeLeft = 120 + (config.currentLvl * 10); // Extra time per level
+            timeLeft = 120 + (config.currentLvl * 10);
             config.comboCount = 0;
             
             document.getElementById('win-modal').style.display = 'none';
             document.getElementById('level-num').innerText = config.currentLvl;
             document.getElementById('combo-count').innerText = 0;
             
-            const activeWords = KNOWLEDGE_DB
+            activeWordsInGame = KNOWLEDGE_DB
                 .slice(0, 3 + config.currentLvl)
                 .map(d => d[config.lang]);
             
-            generateBoard(size, activeWords);
-            renderGrid(size, activeWords);
+            generateBoard(size, activeWordsInGame);
+            renderGrid(size, activeWordsInGame);
             updateProgress();
             startTimer();
         }
 
         function generateBoard(size, words) {
             let placed = false;
+            let attempts = 0;
             
-            while(!placed) {
+            while(!placed && attempts < 10) {
+                attempts++;
                 matrix = Array(size).fill().map(() => Array(size).fill(''));
+                wordCoords = {};
                 placed = true;
                 
                 for(let word of words) {
@@ -1076,9 +1085,14 @@
             const current = selection.map(c => c.innerText).join('');
             const reversed = current.split('').reverse().join('');
             
-            const found = Object.keys(wordCoords).find(word => 
-                (word === current || word === reversed) && !foundWords.includes(word)
-            );
+            // IMPORTANTE: Buscar en activeWordsInGame que son las palabras del nivel actual
+            let found = null;
+            for(let word of activeWordsInGame) {
+                if((word === current || word === reversed) && !foundWords.includes(word)) {
+                    found = word;
+                    break;
+                }
+            }
             
             if(found) {
                 foundWords.push(found);
@@ -1092,7 +1106,6 @@
                 const tag = document.getElementById('tag-' + found);
                 if(tag) tag.classList.add('done');
                 
-                // Play soft success sound
                 if(config.sound) {
                     generateSoftSuccessSound();
                 }
@@ -1101,7 +1114,6 @@
                 const knowledgeKey = 'info' + config.lang;
                 document.getElementById('knowledge-text').innerText = "💡 " + data[knowledgeKey];
                 
-                // Score calculation with combo bonus
                 const baseScore = 200;
                 const comboBonus = config.comboCount > 1 ? (config.comboCount - 1) * 50 : 0;
                 const totalPoints = baseScore + comboBonus;
@@ -1109,9 +1121,7 @@
                 config.score += totalPoints;
                 document.getElementById('score-ui').innerText = config.score;
                 
-                // Show combo message
                 if(config.comboCount > 1) {
-                    const comboMsg = i18n[config.lang].combo + config.comboCount + i18n[config.lang].words;
                     showComboAnimation();
                 }
                 
@@ -1120,7 +1130,9 @@
                 selection = [];
                 updateProgress();
                 
-                if(foundWords.length === Object.keys(wordCoords).length) {
+                // IMPORTANTE: Verificar si se encontraron TODAS las palabras del nivel actual
+                console.log('Found:', foundWords.length, 'Total words:', activeWordsInGame.length);
+                if(foundWords.length === activeWordsInGame.length) {
                     triggerWin();
                 }
             }
@@ -1134,7 +1146,7 @@
         }
 
         function triggerAIHint() {
-            const pending = Object.keys(wordCoords).find(w => !foundWords.includes(w));
+            const pending = activeWordsInGame.find(w => !foundWords.includes(w));
             
             if(pending && config.score >= 100) {
                 config.score -= 100;
@@ -1160,7 +1172,7 @@
         }
 
         function updateProgress() {
-            const progress = (foundWords.length / Object.keys(wordCoords).length) * 100;
+            const progress = (foundWords.length / activeWordsInGame.length) * 100;
             document.getElementById('progress-bar').style.width = progress + '%';
         }
 
@@ -1208,12 +1220,13 @@
                 
                 document.getElementById('timer-ui').innerText = `⏱️ ${minutes}:${seconds}`;
                 
-                // Timer warning at 20 seconds
                 if(timeLeft <= 20 && timeLeft > 0) {
                     document.getElementById('timer-ui').style.color = '#ff3e3e';
                     if(config.vib && navigator.vibrate && timeLeft % 2 === 0) {
                         navigator.vibrate(50);
                     }
+                } else if(timeLeft > 20) {
+                    document.getElementById('timer-ui').style.color = '';
                 }
                 
                 if(timeLeft <= 0) {
