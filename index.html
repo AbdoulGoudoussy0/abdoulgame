@@ -326,6 +326,39 @@
             transform: scale(0.95);
         }
 
+        .level-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 8px;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .level-btn {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid var(--p);
+            color: white;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .level-btn:hover {
+            background: var(--p);
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        .level-btn.active {
+            background: var(--success);
+            border-color: var(--success);
+            color: #000;
+            box-shadow: 0 0 15px var(--success);
+        }
+
         .word-tag { 
             padding: 8px 14px; 
             background: rgba(255,255,255,0.05); 
@@ -470,6 +503,19 @@
             width: 100%;
         }
 
+        .device-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--ai);
+            font-size: 0.75rem;
+            z-index: 999;
+            opacity: 0.7;
+        }
+
         /* ========================================
            RESPONSIVE DESIGN - MEDIA QUERIES
            ======================================== */
@@ -584,11 +630,25 @@
                 width: 100%;
             }
 
+            .level-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+            }
+
+            .level-btn {
+                padding: 8px;
+                font-size: 0.8rem;
+            }
+
             .save-indicator {
                 bottom: 15px;
                 right: 15px;
                 padding: 10px 15px;
                 font-size: 0.85rem;
+            }
+
+            .device-indicator {
+                font-size: 0.7rem;
+                padding: 6px 12px;
             }
 
             h1 {
@@ -681,6 +741,15 @@
 
             #vol-slider {
                 width: 150px;
+            }
+
+            .level-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+            }
+
+            .level-btn {
+                padding: 10px;
+                font-size: 0.85rem;
             }
 
             h1 {
@@ -800,6 +869,15 @@
                 width: 180px;
             }
 
+            .level-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            }
+
+            .level-btn {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+
             .save-indicator {
                 bottom: 25px;
                 right: 25px;
@@ -819,7 +897,6 @@
                 font-size: 4rem !important;
             }
 
-            /* Button effects for desktop */
             .btn-toggle:hover {
                 transform: translateY(-2px);
             }
@@ -850,11 +927,12 @@
     <!-- LEVEL INDICATOR -->
     <div class="level-indicator">🎯 NIVEL <span id="level-num">1</span></div>
     <div class="combo-counter">🔥 RACHA: <span id="combo-count">0</span></div>
+    <div class="device-indicator" id="device-info">MÓVIL</div>
 
     <!-- START MODAL -->
     <div id="start-modal" class="modal">
         <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v18.0</p>
+        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 20px;">POLYGLOT EDITION v19.0</p>
         <div style="margin-bottom: 30px; font-size: 0.95rem; opacity: 0.8;">
             <p id="txt-max-score">Mejor puntuación: <strong id="max-score-val">0</strong></p>
         </div>
@@ -889,6 +967,11 @@
             <div class="setting-item" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <span id="txt-sound-label">SONIDO</span>
                 <button class="btn-toggle active" onclick="toggleSound()" id="sound-val">ON</button> 
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;">
+                <h3 id="txt-level-select" style="margin: 0 0 10px 0; color: var(--p);">SELECCIONAR NIVEL</h3>
+                <div class="level-buttons" id="level-select-buttons"></div>
             </div>
 
             <button class="btn-main" onclick="saveGame()" id="txt-save-btn" style="background: linear-gradient(135deg, #00ff88, #00d970); margin-bottom: 10px;">💾 GUARDAR JUEGO</button>
@@ -950,6 +1033,91 @@
 
     <script>
         // ============================================
+        // DEVICE DETECTION & ADAPTATION
+        // ============================================
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            const isTablet = /iPad|Android(?!.*Mobi)|Tablet|Kindle/i.test(ua);
+            const isDesktop = !isMobile && !isTablet;
+
+            let deviceType = 'DESKTOP';
+            if (isMobile && !isTablet) deviceType = 'MÓVIL';
+            else if (isTablet) deviceType = 'TABLET';
+
+            config.deviceType = deviceType;
+            document.getElementById('device-info').innerText = deviceType;
+
+            return deviceType;
+        }
+
+        // ============================================
+        // IMPROVED AUDIO SYNTHESIS
+        // ============================================
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(frequency, duration, volume = 0.3) {
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.frequency.setValueAtTime(frequency, now);
+            osc.frequency.exponentialRampToValueAtTime(frequency * 0.8, now + duration);
+            
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+            
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        function successSound() {
+            if (!config.sound) return;
+            playTone(600, 0.1, 0.3);
+            setTimeout(() => playTone(800, 0.15, 0.3), 100);
+            setTimeout(() => playTone(1000, 0.2, 0.3), 250);
+        }
+
+        function errorSound() {
+            if (!config.sound) return;
+            playTone(300, 0.2, 0.2);
+            setTimeout(() => playTone(200, 0.2, 0.2), 150);
+        }
+
+        function hintSound() {
+            if (!config.sound) return;
+            playTone(700, 0.1, 0.25);
+            setTimeout(() => playTone(900, 0.1, 0.25), 80);
+        }
+
+        // ============================================
+        // IMPROVED VIBRATION PATTERNS
+        // ============================================
+        function vibrate(pattern) {
+            if (!config.vib || !navigator.vibrate) return;
+            navigator.vibrate(pattern);
+        }
+
+        function vibrationSuccess() {
+            vibrate([50, 30, 50, 30, 100]);
+        }
+
+        function vibrationError() {
+            vibrate([100, 50, 100]);
+        }
+
+        function vibrationHint() {
+            vibrate([30, 50, 30]);
+        }
+
+        function vibrationCell() {
+            vibrate(15);
+        }
+
+        // ============================================
         // INTERNATIONALIZATION (i18n)
         // ============================================
         const i18n = {
@@ -973,7 +1141,8 @@
                 maxScore: "Mejor puntuación:",
                 saved: "✓ Juego guardado",
                 combo: "¡Racha de ",
-                words: " palabras!"
+                words: " palabras!",
+                levelSelect: "SELECCIONAR NIVEL"
             },
             EN: { 
                 settings: "SETTINGS", 
@@ -995,7 +1164,8 @@
                 maxScore: "Best score:",
                 saved: "✓ Game saved",
                 combo: "Combo streak ",
-                words: " words!"
+                words: " words!",
+                levelSelect: "SELECT LEVEL"
             },
             FR: { 
                 settings: "RÉGLAGES", 
@@ -1017,7 +1187,8 @@
                 maxScore: "Meilleur score:",
                 saved: "✓ Jeu enregistré",
                 combo: "Combo ",
-                words: " mots!"
+                words: " mots!",
+                levelSelect: "SÉLECTIONNER NIVEAU"
             }
         };
 
@@ -1085,7 +1256,8 @@
             currentLvl: parseInt(localStorage.getItem('currentLvl')) || 1,
             maxScore: parseInt(localStorage.getItem('maxScore')) || 0,
             comboCount: 0,
-            autoSaveInterval: null
+            autoSaveInterval: null,
+            deviceType: 'DESKTOP'
         };
 
         let foundWords = [];
@@ -1101,8 +1273,10 @@
         // INITIALIZATION
         // ============================================
         window.addEventListener('load', () => {
+            detectDevice();
             loadPreferences();
             updateUIWithPreferences();
+            renderLevelButtons();
             document.getElementById('max-score-val').innerText = config.maxScore;
             document.getElementById('level-num').innerText = config.currentLvl;
         });
@@ -1130,6 +1304,29 @@
             updateThemeUI();
             updateVibUI();
             updateSoundUI();
+        }
+
+        function renderLevelButtons() {
+            const container = document.getElementById('level-select-buttons');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                if (i === config.currentLvl) btn.classList.add('active');
+                btn.innerText = i;
+                btn.onclick = () => selectLevel(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function selectLevel(levelNum) {
+            config.currentLvl = levelNum;
+            config.score = 0;
+            document.getElementById('score-ui').innerText = 0;
+            renderLevelButtons();
+            loadLevel();
+            closeSettings();
         }
 
         // ============================================
@@ -1210,6 +1407,7 @@
             document.getElementById('txt-clear-btn').innerText = t.clear;
             document.getElementById('txt-next').innerText = t.next;
             document.getElementById('txt-max-score').innerText = t.maxScore + ' ';
+            document.getElementById('txt-level-select').innerText = t.levelSelect;
             document.getElementById('knowledge-text').innerText = t.welcome;
         }
 
@@ -1424,7 +1622,7 @@
             if(!selection.includes(el)) {
                 el.classList.add('active');
                 selection.push(el);
-                if(config.vib && navigator.vibrate) navigator.vibrate(15);
+                vibrationCell();
                 check();
             } else if(!isSwiping) {
                 el.classList.remove('active');
@@ -1455,9 +1653,8 @@
                 });
                 document.getElementById('tag-' + found).classList.add('done');
                 
-                if(config.sound) {
-                    document.getElementById('snd-success').play().catch(() => {});
-                }
+                successSound();
+                vibrationSuccess();
                 
                 const data = KNOWLEDGE_DB.find(d => d[config.lang] === found);
                 document.getElementById('knowledge-text').innerText = "💡 " + data["info" + config.lang];
@@ -1479,6 +1676,9 @@
                 config.score -= 100;
                 document.getElementById('score-ui').innerText = config.score;
                 
+                hintSound();
+                vibrationHint();
+                
                 wordCoords[pending].forEach(p => {
                     const cell = document.querySelector(`.cell[data-r="${p.r}"][data-c="${p.c}"]`);
                     if(cell) {
@@ -1496,15 +1696,15 @@
 
         function triggerWin() {
             clearInterval(timerInterval);
-            if(config.sound) {
-                document.getElementById('snd-goal').play().catch(() => {});
-            }
+            document.getElementById('snd-goal').play().catch(() => {});
             
             confetti({
                 particleCount: 200,
                 spread: 80,
                 origin: { y: 0.6 }
             });
+            
+            vibrate([100, 50, 100, 50, 100]);
             
             if(config.score > config.maxScore) {
                 config.maxScore = config.score;
@@ -1540,9 +1740,8 @@
                 
                 if(timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    if(config.sound) {
-                        document.getElementById('snd-lose').play().catch(() => {});
-                    }
+                    document.getElementById('snd-lose').play().catch(() => {});
+                    vibrate([200, 100, 200]);
                     location.reload();
                 }
             }, 1000);
