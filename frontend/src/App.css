@@ -24,6 +24,11 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* Safe area support for notches and navigation bars */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 body {
@@ -32,6 +37,11 @@ body {
   color: white;
   user-select: none;
   -webkit-user-select: none;
+  /* Prevent overscroll/bounce on iOS */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text selection */
+  -webkit-touch-callout: none;
 }
 
 /* Theme variations with enhanced contrast */
@@ -623,6 +633,33 @@ body {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
+}
+
+/* ===== SAFE AREA ADJUSTMENTS ===== */
+
+/* Top bar respects safe area */
+.top-bar {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+/* Bottom controls respect safe area */
+.controls-bottom {
+  padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px));
+}
+
+/* Modals respect safe areas */
+.modal-content, .modal-content-bounce {
+  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+}
+
+/* Landscape sidebar respects safe area */
+.sidebar-landscape {
+  padding-left: max(8px, env(safe-area-inset-left));
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.main-landscape {
+  padding-right: max(8px, env(safe-area-inset-right));
 }
 
 /* ===== RESPONSIVE LAYOUTS ===== */

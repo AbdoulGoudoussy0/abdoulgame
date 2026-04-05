@@ -1,6 +1,8 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -10,6 +12,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -21,6 +24,30 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# Security Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Input sanitization helper
+def sanitize_input(text: str, max_length: int = 100) -> str:
+    """Sanitize user input to prevent injection attacks"""
+    if not text:
+        return ""
+    # Remove potentially dangerous characters
+    sanitized = re.sub(r'[<>"\';\\]', '', text)
+    # Limit length
+    return sanitized[:max_length].strip()
 
 # Knowledge Database - Words with wisdom phrases in multiple languages
 KNOWLEDGE_DB = [
@@ -329,7 +356,25 @@ async def generate_share_text(data: ShareData):
 
 @api_router.post("/scores", response_model=ScoreRecord)
 async def save_score(input: ScoreCreate):
-    score_obj = ScoreRecord(**input.model_dump())
+    # Sanitize player name
+    sanitized_name = sanitize_input(input.player_name, 50)
+    if not sanitized_name:
+        sanitized_name = "Jugador"
+    
+    # Validate score bounds
+    validated_score = max(0, min(input.score, 100000))
+    validated_level = max(1, min(input.level, 10))
+    validated_words = max(0, min(input.words_found, 20))
+    validated_time = max(0, min(input.time_remaining, 300))
+    
+    score_obj = ScoreRecord(
+        player_name=sanitized_name,
+        score=validated_score,
+        level=validated_level,
+        language=input.language[:2].upper() if input.language else "ES",
+        words_found=validated_words,
+        time_remaining=validated_time
+    )
     doc = score_obj.model_dump()
     doc['timestamp'] = doc['timestamp'].isoformat()
     
@@ -346,7 +391,16 @@ async def get_top_scores(limit: int = 10):
 
 @api_router.get("/scores/player/{player_name}", response_model=List[ScoreRecord])
 async def get_player_scores(player_name: str, limit: int = 20, skip: int = 0):
-    scores = await db.scores.find({"player_name": player_name}, {"_id": 0}).sort("score", -1).skip(skip).limit(limit).to_list(limit)
+    # Sanitize and validate inputs
+    sanitized_name = sanitize_input(player_name, 50)
+    validated_limit = max(1, min(limit, 100))
+    validated_skip = max(0, min(skip, 10000))
+    
+    scores = await db.scores.find(
+        {"player_name": sanitized_name}, 
+        {"_id": 0}
+    ).sort("score", -1).skip(validated_skip).limit(validated_limit).to_list(validated_limit)
+    
     for score in scores:
         if isinstance(score['timestamp'], str):
             score['timestamp'] = datetime.fromisoformat(score['timestamp'])

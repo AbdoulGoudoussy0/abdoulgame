@@ -1,0 +1,33 @@
+{
+  "name": "AbdoulGame",
+  "short_name": "AbdoulGame",
+  "description": "Juego de búsqueda de palabras multilingüe con sabiduría",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#030305",
+  "theme_color": "#00F2FF",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/8065/8065416.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/128/8065/8065416.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/64/8065/8065416.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["games", "education"],
+  "lang": "es",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}
