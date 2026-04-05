@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,9 +18,6 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
-
-# LLM API Key
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -213,104 +209,113 @@ async def generate_game(request: GameRequest):
 
 @api_router.post("/ai/hint", response_model=AIHintResponse)
 async def get_ai_hint(request: AIHintRequest):
-    """Get an intelligent AI-generated hint for a word"""
-    if not EMERGENT_LLM_KEY:
-        return AIHintResponse(
-            hint="Busca las letras que forman esta palabra de sabiduría.",
-            encouragement="¡Tú puedes encontrarla!"
-        )
+    """Get a hint for a word - uses predefined hints (no AI cost)"""
+    # Predefined hints by language - no AI needed
+    hints = {
+        "ES": [
+            "Busca en las diagonales, ¡ahí se esconden!",
+            "Intenta leer de derecha a izquierda también",
+            "Las letras brillantes te guían al tesoro",
+            "Mira bien las esquinas del tablero",
+            "A veces las palabras van hacia arriba"
+        ],
+        "EN": [
+            "Search the diagonals, they hide there!",
+            "Try reading right to left as well",
+            "The glowing letters guide you to treasure",
+            "Look carefully at the board corners",
+            "Sometimes words go upward"
+        ],
+        "FR": [
+            "Cherchez dans les diagonales, elles s'y cachent!",
+            "Essayez de lire de droite à gauche aussi",
+            "Les lettres brillantes vous guident vers le trésor",
+            "Regardez bien les coins du plateau",
+            "Parfois les mots vont vers le haut"
+        ]
+    }
     
-    lang_names = {"ES": "Spanish", "EN": "English", "FR": "French"}
-    lang_name = lang_names.get(request.language, "Spanish")
+    encouragements = {
+        "ES": ["¡Tú puedes!", "¡Sigue así, campeón!", "¡Casi lo tienes!", "¡Eres increíble!", "¡No te rindas!"],
+        "EN": ["You can do it!", "Keep going, champion!", "Almost there!", "You're amazing!", "Don't give up!"],
+        "FR": ["Tu peux le faire!", "Continue, champion!", "Tu y es presque!", "Tu es incroyable!", "N'abandonne pas!"]
+    }
     
-    try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"hint-{uuid.uuid4()}",
-            system_message=f"""You are a wise and encouraging game assistant for a word search game. 
-            Respond ONLY in {lang_name}. Be warm, motivating, and give clever hints without revealing the answer directly.
-            Keep responses short (1-2 sentences max for hint, 1 sentence for encouragement)."""
-        ).with_model("openai", "gpt-4o")
-        
-        found_str = ", ".join(request.found_letters) if request.found_letters else "none yet"
-        
-        message = UserMessage(
-            text=f"Give a creative hint for finding the word '{request.word}' in a word search. Letters found so far: {found_str}. Don't reveal the word directly. Also add a short motivational encouragement."
-        )
-        
-        response = await chat.send_message(message)
-        
-        # Parse response - expect hint and encouragement
-        lines = response.strip().split('\n')
-        hint = lines[0] if lines else "Sigue buscando..."
-        encouragement = lines[1] if len(lines) > 1 else "¡Vas muy bien!"
-        
-        return AIHintResponse(hint=hint, encouragement=encouragement)
-    except Exception as e:
-        logging.error(f"AI Hint error: {e}")
-        fallback_hints = {
-            "ES": ("Piensa en el significado profundo de esta palabra.", "¡Confía en tu intuición!"),
-            "EN": ("Think about the deep meaning of this word.", "Trust your intuition!"),
-            "FR": ("Pensez au sens profond de ce mot.", "Faites confiance à votre intuition!")
-        }
-        hint, enc = fallback_hints.get(request.language, fallback_hints["ES"])
-        return AIHintResponse(hint=hint, encouragement=enc)
+    lang = request.language if request.language in hints else "ES"
+    hint = random.choice(hints[lang])
+    encouragement = random.choice(encouragements[lang])
+    
+    return AIHintResponse(hint=hint, encouragement=encouragement)
 
 @api_router.post("/ai/encouragement")
 async def get_ai_encouragement(language: str = "ES", words_found: int = 0, total_words: int = 0):
-    """Get personalized AI encouragement based on progress"""
-    if not EMERGENT_LLM_KEY:
-        messages = {
-            "ES": "¡Sigue así, campeón!",
-            "EN": "Keep going, champion!",
-            "FR": "Continue comme ça, champion!"
+    """Get encouragement based on progress - no AI cost"""
+    progress = (words_found / total_words * 100) if total_words > 0 else 0
+    
+    messages = {
+        "ES": {
+            "start": "¡Vamos, encuentra tu primera palabra!",
+            "progress": f"¡Genial! {words_found} de {total_words} palabras. ¡Sigue así!",
+            "almost": "¡Ya casi terminas! ¡Un último esfuerzo!",
+            "done": "¡INCREÍBLE! ¡Las encontraste todas!"
+        },
+        "EN": {
+            "start": "Let's go, find your first word!",
+            "progress": f"Great! {words_found} of {total_words} words. Keep it up!",
+            "almost": "Almost done! One last push!",
+            "done": "AMAZING! You found them all!"
+        },
+        "FR": {
+            "start": "Allez, trouvez votre premier mot!",
+            "progress": f"Génial! {words_found} sur {total_words} mots. Continue!",
+            "almost": "Presque fini! Un dernier effort!",
+            "done": "INCROYABLE! Tu les as tous trouvés!"
         }
-        return {"message": messages.get(language, messages["ES"])}
+    }
     
-    lang_names = {"ES": "Spanish", "EN": "English", "FR": "French"}
-    lang_name = lang_names.get(language, "Spanish")
+    lang = language if language in messages else "ES"
     
-    try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"encourage-{uuid.uuid4()}",
-            system_message=f"You are an enthusiastic sports commentator for a word game. Respond ONLY in {lang_name}. Be exciting and motivating! Keep it to 1 short sentence."
-        ).with_model("openai", "gpt-4o")
-        
-        progress = (words_found / total_words * 100) if total_words > 0 else 0
-        
-        message = UserMessage(
-            text=f"Player found {words_found} of {total_words} words ({progress:.0f}% complete). Give a short, exciting encouragement like a football commentator!"
-        )
-        
-        response = await chat.send_message(message)
-        return {"message": response.strip()}
-    except Exception as e:
-        logging.error(f"AI Encouragement error: {e}")
-        return {"message": "¡Increíble jugada! ¡Sigue adelante!"}
+    if progress == 0:
+        return {"message": messages[lang]["start"]}
+    elif progress >= 100:
+        return {"message": messages[lang]["done"]}
+    elif progress >= 75:
+        return {"message": messages[lang]["almost"]}
+    else:
+        return {"message": messages[lang]["progress"]}
 
 @api_router.post("/ai/wisdom")
 async def get_ai_wisdom(word: str, language: str = "ES"):
-    """Generate AI wisdom phrase for a found word"""
-    if not EMERGENT_LLM_KEY:
-        return {"wisdom": f"Has encontrado: {word}"}
+    """Get wisdom phrase for a found word - uses predefined phrases (no AI cost)"""
+    # Find the word in our knowledge database
+    word_data = next((w for w in KNOWLEDGE_DB if w.get(language) == word), None)
     
-    lang_names = {"ES": "Spanish", "EN": "English", "FR": "French"}
-    lang_name = lang_names.get(language, "Spanish")
+    if word_data:
+        info_key = f"info{language}"
+        wisdom = word_data.get(info_key, f"¡Encontraste: {word}!")
+        return {"wisdom": wisdom}
     
-    try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"wisdom-{uuid.uuid4()}",
-            system_message=f"You are a wise philosopher. Generate a profound but short wisdom phrase about a concept. Respond ONLY in {lang_name}. Maximum 15 words."
-        ).with_model("openai", "gpt-4o")
-        
-        message = UserMessage(text=f"Create a short, inspiring wisdom phrase about '{word}'")
-        response = await chat.send_message(message)
-        return {"wisdom": response.strip()}
-    except Exception as e:
-        logging.error(f"AI Wisdom error: {e}")
-        return {"wisdom": f"💡 {word}: Una palabra de poder y significado."}
+    # Fallback generic wisdom phrases
+    generic_wisdom = {
+        "ES": [
+            f"{word}: Una palabra que inspira grandeza.",
+            f"Has descubierto {word}, símbolo de sabiduría.",
+            f"{word} representa el camino hacia el conocimiento."
+        ],
+        "EN": [
+            f"{word}: A word that inspires greatness.",
+            f"You discovered {word}, symbol of wisdom.",
+            f"{word} represents the path to knowledge."
+        ],
+        "FR": [
+            f"{word}: Un mot qui inspire la grandeur.",
+            f"Vous avez découvert {word}, symbole de sagesse.",
+            f"{word} représente le chemin vers la connaissance."
+        ]
+    }
+    
+    lang = language if language in generic_wisdom else "ES"
+    return {"wisdom": random.choice(generic_wisdom[lang])}
 
 @api_router.post("/share/generate")
 async def generate_share_text(data: ShareData):
