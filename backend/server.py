@@ -340,8 +340,8 @@ async def get_top_scores(limit: int = 10):
     return scores
 
 @api_router.get("/scores/player/{player_name}", response_model=List[ScoreRecord])
-async def get_player_scores(player_name: str):
-    scores = await db.scores.find({"player_name": player_name}, {"_id": 0}).sort("score", -1).to_list(100)
+async def get_player_scores(player_name: str, limit: int = 20, skip: int = 0):
+    scores = await db.scores.find({"player_name": player_name}, {"_id": 0}).sort("score", -1).skip(skip).limit(limit).to_list(limit)
     for score in scores:
         if isinstance(score['timestamp'], str):
             score['timestamp'] = datetime.fromisoformat(score['timestamp'])

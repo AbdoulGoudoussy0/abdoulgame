@@ -4,24 +4,56 @@ import axios from "axios";
 import { 
   Settings, Lightbulb, X, Volume2, VolumeX, Trophy, RotateCcw, Play, 
   Share2, ChevronUp, ChevronDown, Sparkles, Zap, Globe, Palette,
-  Smartphone, Monitor, Tablet
+  Smartphone, HelpCircle, Hand, MousePointer, Clock, Star, Target,
+  Check, ArrowRight
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Soft, pleasant sound effects (base64 encoded short beeps)
-const SOUNDS = {
-  // Soft chime for word found
-  correct: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2IkY2Fc2hqa3yGj5KKgHJpZWt4g42RjYN3bWhjbHeDjZGOhXlwamVpd4KLj42FenFsZ2p2gYqOjYZ7c25panWAiY2Mh3x0cGtrdH+IjIuHfXVxbW11f4eLi4h+dnJub3R+houKiH93c29vdH2Gi4qIf3d0cHB0fYaKioh/d3RwcHR9hoqKiH93dHBwdH2GioqIf3d0cHB0fYaKioh/d3RwcHR9hoqKiH93dHBwdH2GioqIf3d0cHB0fYaKioh/d3RwcHR9hoqKiH93dHBwdH2GioqIf3d0cHB0fYaKioh/d3RwcHR9hoqKiH93dHBwdH2GioqIf3d0cHB0fQ==",
-  // Celebration sound for level complete
-  goal: "data:audio/wav;base64,UklGRl9CAABXQVZFZm10IBAAAAABAAEAIlYAABKwAAACABAAZGF0YTs/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-  // Click sound
-  click: "data:audio/wav;base64,UklGRiQEAABXQVZFZm10IBAAAAABAAEARKwAABCxAgACABAAZGF0YQAEAACAgICAgICAgICAgICAgICAgICAgICAgICA"
+// Enhanced soft sound effects - pleasant chimes and tones
+const createSoftSound = (frequency, duration, type = 'sine') => {
+  return () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = type;
+      
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
 };
 
-// i18n translations
+// Sound functions
+const playClickSound = createSoftSound(800, 0.08, 'sine');
+const playSelectSound = createSoftSound(600, 0.1, 'triangle');
+const playCorrectSound = () => {
+  // Pleasant chord for finding a word
+  [523, 659, 784].forEach((freq, i) => {
+    setTimeout(() => createSoftSound(freq, 0.3, 'sine')(), i * 80);
+  });
+};
+const playWinSound = () => {
+  // Victory fanfare
+  [523, 659, 784, 1047].forEach((freq, i) => {
+    setTimeout(() => createSoftSound(freq, 0.4, 'sine')(), i * 120);
+  });
+};
+
+// i18n translations with guide content
 const i18n = {
   ES: {
     title: "ABDOULGAME",
@@ -38,7 +70,7 @@ const i18n = {
     exit: "¿SALIR DEL PARTIDO?",
     hint: "PISTA IA",
     clear: "BORRAR",
-    next: "SIGUIENTE",
+    next: "SIGUIENTE NIVEL",
     tap: "TOCA UNA LETRA",
     goal: "¡GOOOOL!",
     levelComplete: "¡NIVEL COMPLETADO!",
@@ -46,7 +78,7 @@ const i18n = {
     score: "PUNTOS",
     level: "NIVEL",
     wordsFound: "PALABRAS",
-    playAgain: "JUGAR DE NUEVO",
+    playAgain: "REINTENTAR",
     yes: "SÍ",
     no: "NO",
     on: "ON",
@@ -56,7 +88,24 @@ const i18n = {
     aiThinking: "IA pensando...",
     levelSelect: "Seleccionar Nivel",
     copied: "¡Copiado!",
-    encouragement: "¡Sigue así, campeón!"
+    encouragement: "¡Sigue así, campeón!",
+    guide: "CÓMO JUGAR",
+    guideTitle: "GUÍA DEL JUEGO",
+    guideClose: "¡ENTENDIDO!",
+    // Guide sections
+    guideObjective: "OBJETIVO",
+    guideObjectiveText: "Encuentra todas las palabras ocultas en la cuadrícula antes de que se acabe el tiempo. Cada palabra encontrada te da puntos y una frase de sabiduría.",
+    guideControls: "CONTROLES",
+    guideControlsText: "TOCAR: Pulsa letra por letra para formar la palabra. DESLIZAR: Arrastra el dedo sobre las letras consecutivas. Las palabras pueden estar en horizontal, vertical o diagonal, ¡en cualquier dirección!",
+    guideFeatures: "FUNCIONES",
+    guideFeaturesText: "🤖 PISTA IA: La inteligencia artificial te ayuda a encontrar una palabra (cuesta 100 puntos). ⏱️ TIEMPO: Completa el nivel antes de que llegue a cero. ⭐ PUNTOS: +200 por palabra encontrada.",
+    guideThemes: "PERSONALIZACIÓN",
+    guideThemesText: "Cambia el idioma (🇪🇸🇺🇸🇫🇷), el tema de colores (Neón, Clásico, Dorado) y ajusta el volumen desde el menú de configuración.",
+    guideLevels: "NIVELES",
+    guideLevelsText: "Hay 10 niveles de dificultad. Cada nivel aumenta el tamaño de la cuadrícula, el número de palabras y reduce el tiempo disponible. ¡Desbloquea niveles completándolos!",
+    guideShare: "COMPARTIR",
+    guideShareText: "Al ganar, comparte tu logro en redes sociales para retar a tus amigos. ¡Demuestra quién es el mejor buscador de palabras!",
+    tapOrSwipe: "Toca o desliza para seleccionar"
   },
   EN: {
     title: "ABDOULGAME",
@@ -73,7 +122,7 @@ const i18n = {
     exit: "QUIT MATCH?",
     hint: "AI HINT",
     clear: "CLEAR",
-    next: "NEXT",
+    next: "NEXT LEVEL",
     tap: "TAP A LETTER",
     goal: "GOOOAL!",
     levelComplete: "LEVEL COMPLETE!",
@@ -81,7 +130,7 @@ const i18n = {
     score: "SCORE",
     level: "LEVEL",
     wordsFound: "WORDS",
-    playAgain: "PLAY AGAIN",
+    playAgain: "TRY AGAIN",
     yes: "YES",
     no: "NO",
     on: "ON",
@@ -91,7 +140,23 @@ const i18n = {
     aiThinking: "AI thinking...",
     levelSelect: "Select Level",
     copied: "Copied!",
-    encouragement: "Keep going, champion!"
+    encouragement: "Keep going, champion!",
+    guide: "HOW TO PLAY",
+    guideTitle: "GAME GUIDE",
+    guideClose: "GOT IT!",
+    guideObjective: "OBJECTIVE",
+    guideObjectiveText: "Find all hidden words in the grid before time runs out. Each word found gives you points and a wisdom phrase.",
+    guideControls: "CONTROLS",
+    guideControlsText: "TAP: Press letter by letter to form the word. SWIPE: Drag your finger over consecutive letters. Words can be horizontal, vertical or diagonal, in any direction!",
+    guideFeatures: "FEATURES",
+    guideFeaturesText: "🤖 AI HINT: Artificial intelligence helps you find a word (costs 100 points). ⏱️ TIME: Complete the level before it reaches zero. ⭐ POINTS: +200 per word found.",
+    guideThemes: "CUSTOMIZATION",
+    guideThemesText: "Change the language (🇪🇸🇺🇸🇫🇷), color theme (Neon, Classic, Gold) and adjust the volume from the settings menu.",
+    guideLevels: "LEVELS",
+    guideLevelsText: "There are 10 difficulty levels. Each level increases grid size, number of words and reduces available time. Unlock levels by completing them!",
+    guideShare: "SHARE",
+    guideShareText: "When you win, share your achievement on social media to challenge your friends. Show who's the best word finder!",
+    tapOrSwipe: "Tap or swipe to select"
   },
   FR: {
     title: "ABDOULGAME",
@@ -108,7 +173,7 @@ const i18n = {
     exit: "QUITTER LE MATCH?",
     hint: "INDICE IA",
     clear: "EFFACER",
-    next: "SUIVANT",
+    next: "NIVEAU SUIVANT",
     tap: "TOUCHEZ UNE LETTRE",
     goal: "BUUUT!",
     levelComplete: "NIVEAU TERMINÉ!",
@@ -116,7 +181,7 @@ const i18n = {
     score: "POINTS",
     level: "NIVEAU",
     wordsFound: "MOTS",
-    playAgain: "REJOUER",
+    playAgain: "RÉESSAYER",
     yes: "OUI",
     no: "NON",
     on: "ON",
@@ -126,7 +191,23 @@ const i18n = {
     aiThinking: "IA réfléchit...",
     levelSelect: "Sélectionner Niveau",
     copied: "Copié!",
-    encouragement: "Continue comme ça, champion!"
+    encouragement: "Continue comme ça, champion!",
+    guide: "COMMENT JOUER",
+    guideTitle: "GUIDE DU JEU",
+    guideClose: "COMPRIS!",
+    guideObjective: "OBJECTIF",
+    guideObjectiveText: "Trouvez tous les mots cachés dans la grille avant la fin du temps. Chaque mot trouvé vous donne des points et une phrase de sagesse.",
+    guideControls: "CONTRÔLES",
+    guideControlsText: "TOUCHER: Appuyez lettre par lettre pour former le mot. GLISSER: Faites glisser votre doigt sur les lettres consécutives. Les mots peuvent être horizontaux, verticaux ou diagonaux, dans n'importe quelle direction!",
+    guideFeatures: "FONCTIONNALITÉS",
+    guideFeaturesText: "🤖 INDICE IA: L'intelligence artificielle vous aide à trouver un mot (coûte 100 points). ⏱️ TEMPS: Terminez le niveau avant qu'il n'atteigne zéro. ⭐ POINTS: +200 par mot trouvé.",
+    guideThemes: "PERSONNALISATION",
+    guideThemesText: "Changez la langue (🇪🇸🇺🇸🇫🇷), le thème de couleurs (Néon, Classique, Or) et ajustez le volume depuis le menu des paramètres.",
+    guideLevels: "NIVEAUX",
+    guideLevelsText: "Il y a 10 niveaux de difficulté. Chaque niveau augmente la taille de la grille, le nombre de mots et réduit le temps disponible. Débloquez les niveaux en les complétant!",
+    guideShare: "PARTAGER",
+    guideShareText: "Quand vous gagnez, partagez votre exploit sur les réseaux sociaux pour défier vos amis. Montrez qui est le meilleur chercheur de mots!",
+    tapOrSwipe: "Touchez ou glissez pour sélectionner"
   }
 };
 
@@ -154,6 +235,7 @@ function App() {
   const [showExit, setShowExit] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [lang, setLang] = useState("ES");
   const [theme, setTheme] = useState("neon");
   const [volume, setVolume] = useState(0.5);
@@ -171,29 +253,9 @@ function App() {
   // Refs
   const isSwiping = useRef(false);
   const timerRef = useRef(null);
-  const audioRefs = useRef({});
+  const lastCell = useRef(null);
 
   const t = i18n[lang];
-
-  // Initialize audio
-  useEffect(() => {
-    audioRefs.current = {
-      correct: new Audio(SOUNDS.correct),
-      goal: new Audio(SOUNDS.goal),
-      click: new Audio(SOUNDS.click)
-    };
-    
-    Object.values(audioRefs.current).forEach(audio => {
-      audio.volume = volume;
-    });
-  }, []);
-
-  // Update audio volume
-  useEffect(() => {
-    Object.values(audioRefs.current).forEach(audio => {
-      if (audio) audio.volume = muted ? 0 : volume;
-    });
-  }, [volume, muted]);
 
   // Detect device and orientation
   useEffect(() => {
@@ -204,8 +266,6 @@ function App() {
       const isLandscapeMode = width > height;
       setOrientation(isLandscapeMode ? "landscape" : "portrait");
       
-      // For landscape, check by the smaller dimension (height)
-      // For portrait, check by width
       const checkDimension = isLandscapeMode ? height : width;
       
       if (checkDimension < 500) setDeviceType("mobile");
@@ -245,22 +305,14 @@ function App() {
     if (gameState === "playing" && words.length > 0 && foundWords.length === words.length) {
       clearInterval(timerRef.current);
       setGameState("win");
-      playSound("goal");
+      if (!muted) playWinSound();
       triggerConfetti();
       
-      // Unlock next level
       if (level >= maxUnlockedLevel) {
         setMaxUnlockedLevel(Math.min(level + 1, 10));
       }
     }
-  }, [foundWords, words, gameState, level, maxUnlockedLevel]);
-
-  const playSound = (type) => {
-    if (!muted && audioRefs.current[type]) {
-      audioRefs.current[type].currentTime = 0;
-      audioRefs.current[type].play().catch(() => {});
-    }
-  };
+  }, [foundWords, words, gameState, level, maxUnlockedLevel, muted]);
 
   const triggerConfetti = () => {
     const duration = 3000;
@@ -268,14 +320,14 @@ function App() {
 
     const frame = () => {
       confetti({
-        particleCount: 3,
+        particleCount: 4,
         angle: 60,
         spread: 55,
         origin: { x: 0 },
         colors: ['#00F2FF', '#7000FF', '#FF00C8', '#39FF14', '#FFD700']
       });
       confetti({
-        particleCount: 3,
+        particleCount: 4,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
@@ -338,20 +390,25 @@ function App() {
     }
   };
 
+  // Enhanced cell selection - supports both tap and swipe
   const handleCellPointerDown = (r, c, e) => {
     e.preventDefault();
     isSwiping.current = true;
+    lastCell.current = `${r}-${c}`;
     selectCell(r, c);
   };
 
   const handleCellPointerEnter = (r, c) => {
-    if (isSwiping.current) {
+    const cellKey = `${r}-${c}`;
+    if (isSwiping.current && lastCell.current !== cellKey) {
+      lastCell.current = cellKey;
       selectCell(r, c);
     }
   };
 
   const handlePointerUp = () => {
     isSwiping.current = false;
+    lastCell.current = null;
   };
 
   const selectCell = (r, c) => {
@@ -361,11 +418,18 @@ function App() {
     if (isFound) return;
 
     const isSelected = selection.some((s) => s.r === r && s.c === c);
+    
     if (!isSelected) {
       if (vibration && navigator.vibrate) navigator.vibrate(10);
-      playSound("click");
-      setSelection((prev) => [...prev, { r, c }]);
-      checkWord([...selection, { r, c }]);
+      if (!muted) playSelectSound();
+      
+      const newSelection = [...selection, { r, c }];
+      setSelection(newSelection);
+      checkWord(newSelection);
+    } else if (!isSwiping.current) {
+      // Allow tap to deselect when not swiping
+      if (!muted) playClickSound();
+      setSelection(selection.filter(s => !(s.r === r && s.c === c)));
     }
   };
 
@@ -386,7 +450,8 @@ function App() {
       setScoreAnimating(true);
       setTimeout(() => setScoreAnimating(false), 400);
       
-      playSound("correct");
+      if (!muted) playCorrectSound();
+      if (vibration && navigator.vibrate) navigator.vibrate([50, 30, 50]);
       
       // Get AI wisdom
       try {
@@ -402,7 +467,7 @@ function App() {
 
   const clearSelection = () => {
     setSelection([]);
-    playSound("click");
+    if (!muted) playClickSound();
   };
 
   const useAIHint = async () => {
@@ -414,7 +479,6 @@ function App() {
     setScore((prev) => prev - 100);
     setAiLoading(true);
     
-    // Show visual hint on cells
     setHintCells(pendingWord.coords.map((c) => `${c.r}-${c.c}`));
     
     try {
@@ -449,17 +513,18 @@ function App() {
       
       if (navigator.share) {
         await navigator.share({
-          title: "AbdoulGame",
+          title: "AbdoulGame - Polyglot Word Search",
           text: shareText,
           url: window.location.href
         });
       } else {
-        await navigator.clipboard.writeText(shareText);
+        await navigator.clipboard.writeText(shareText + "\n" + window.location.href);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
     } catch (error) {
-      console.error("Share error:", error);
+      // User cancelled share or error
+      console.log("Share cancelled or error:", error);
     }
   };
 
@@ -467,11 +532,13 @@ function App() {
     const order = ["ES", "EN", "FR"];
     const nextIdx = (order.indexOf(lang) + 1) % order.length;
     setLang(order[nextIdx]);
+    if (!muted) playClickSound();
   };
 
   const toggleTheme = () => {
     const nextIdx = (themes.indexOf(theme) + 1) % themes.length;
     setTheme(themes[nextIdx]);
+    if (!muted) playClickSound();
   };
 
   const formatTime = (seconds) => {
@@ -486,7 +553,7 @@ function App() {
   const isMobile = deviceType === "mobile";
   const isLandscapeMobile = isLandscape && isMobile;
 
-  // Render game content based on layout
+  // Render game grid
   const renderGameGrid = () => (
     <div
       className="glass-light rounded-2xl p-2 w-full game-grid-wrapper"
@@ -514,7 +581,7 @@ function App() {
               className={`grid-cell ${isSelected ? "selected" : ""} ${isFound ? "found" : ""} ${isHint ? "hint" : ""}`}
               onPointerDown={(e) => handleCellPointerDown(r, c, e)}
               onPointerEnter={() => handleCellPointerEnter(r, c)}
-              style={{ animationDelay: `${(r * matrix.length + c) * 15}ms` }}
+              style={{ animationDelay: `${(r * matrix.length + c) * 12}ms` }}
               data-testid={`grid-cell-${r}-${c}`}
             >
               {cell}
@@ -525,6 +592,7 @@ function App() {
     </div>
   );
 
+  // Render word bank
   const renderWordBank = () => (
     <div className={`word-bank flex gap-2 justify-center px-4 py-2 ${isMobile ? "flex-nowrap overflow-x-auto" : "flex-wrap"}`} data-testid="word-bank">
       {words.map((w) => (
@@ -539,8 +607,9 @@ function App() {
     </div>
   );
 
+  // Render controls
   const renderControls = () => (
-    <div className={`controls-bottom flex items-center justify-center gap-3 p-4 ${isLandscape && isMobile ? "flex-col" : ""}`} data-testid="controls">
+    <div className={`controls-bottom flex items-center justify-center gap-3 p-4 ${isLandscapeMobile ? "flex-col" : ""}`} data-testid="controls">
       <button
         className={`btn-game btn-primary ${aiLoading ? "ai-thinking" : ""}`}
         onClick={useAIHint}
@@ -562,6 +631,94 @@ function App() {
       >
         {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
       </button>
+    </div>
+  );
+
+  // Guide Modal Component
+  const GuideModal = () => (
+    <div className="modal-backdrop absolute inset-0 flex items-center justify-center z-50 p-4 bg-black/95" data-testid="guide-modal">
+      <div className="modal-content glass-strong rounded-3xl p-5 md:p-6 max-w-md w-full max-h-[90vh] overflow-hidden">
+        <h2 className="font-heading text-xl md:text-2xl font-bold mb-4 text-center" style={{ color: "var(--theme-primary)" }}>
+          {t.guideTitle}
+        </h2>
+        
+        <div className="guide-scroll">
+          {/* Objective */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Target size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideObjective}</h3>
+                <p className="guide-text">{t.guideObjectiveText}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Controls */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Hand size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideControls}</h3>
+                <p className="guide-text">{t.guideControlsText}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Features */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Sparkles size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideFeatures}</h3>
+                <p className="guide-text">{t.guideFeaturesText}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Themes */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Palette size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideThemes}</h3>
+                <p className="guide-text">{t.guideThemesText}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Levels */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Star size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideLevels}</h3>
+                <p className="guide-text">{t.guideLevelsText}</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Share */}
+          <div className="guide-section">
+            <div className="flex items-start gap-3">
+              <div className="guide-icon"><Share2 size={24} /></div>
+              <div>
+                <h3 className="guide-title">{t.guideShare}</h3>
+                <p className="guide-text">{t.guideShareText}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button
+          className="btn-game btn-primary w-full mt-4"
+          onClick={() => setShowGuide(false)}
+          data-testid="close-guide-button"
+        >
+          <Check size={18} />
+          {t.guideClose}
+        </button>
+      </div>
     </div>
   );
 
@@ -595,18 +752,18 @@ function App() {
             <h1 className="font-heading text-4xl md:text-6xl font-black text-glow mb-2 animate-float" style={{ color: "var(--theme-primary)" }}>
               {t.title}
             </h1>
-            <p className="font-mono text-xs md:text-sm opacity-70 mb-8 tracking-widest">{t.subtitle}</p>
+            <p className="font-mono text-xs md:text-sm opacity-70 mb-6 tracking-widest">{t.subtitle}</p>
             
             {/* Level Selector */}
-            <div className="level-selector mb-8 mx-auto" style={{ width: "fit-content" }}>
+            <div className="level-selector mb-6 mx-auto" style={{ width: "fit-content" }}>
               <button 
                 className="level-btn"
-                onClick={() => setLevel(Math.max(1, level - 1))}
+                onClick={() => { setLevel(Math.max(1, level - 1)); if(!muted) playClickSound(); }}
                 disabled={level <= 1}
               >
                 <ChevronDown size={18} />
               </button>
-              <div className="text-center">
+              <div className="text-center px-4">
                 <span className="font-heading text-3xl font-black" style={{ color: "var(--theme-primary)" }}>
                   {level}
                 </span>
@@ -614,7 +771,7 @@ function App() {
               </div>
               <button 
                 className="level-btn"
-                onClick={() => setLevel(Math.min(maxUnlockedLevel, level + 1))}
+                onClick={() => { setLevel(Math.min(maxUnlockedLevel, level + 1)); if(!muted) playClickSound(); }}
                 disabled={level >= maxUnlockedLevel}
               >
                 <ChevronUp size={18} />
@@ -622,7 +779,7 @@ function App() {
             </div>
 
             <button
-              className="btn-game btn-primary text-base md:text-lg px-8 md:px-10 py-4"
+              className="btn-game btn-primary text-base md:text-lg px-8 md:px-10 py-4 mb-4"
               onClick={startGame}
               data-testid="start-button"
             >
@@ -630,7 +787,18 @@ function App() {
               {t.enterStadium}
             </button>
             
-            <div className="flex justify-center gap-4 mt-6">
+            {/* Guide Button */}
+            <button
+              className="btn-game mb-6"
+              style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+              onClick={() => setShowGuide(true)}
+              data-testid="guide-button"
+            >
+              <HelpCircle size={18} />
+              {t.guide}
+            </button>
+            
+            <div className="flex justify-center gap-4">
               <button className="btn-icon" onClick={toggleLang} data-testid="lang-toggle-start">
                 <span className="text-xl">{languageFlags[lang]}</span>
               </button>
@@ -644,18 +812,20 @@ function App() {
 
       {/* Game UI - Adaptive Layout */}
       {gameState === "playing" && (
-        <div className={`game-container flex h-full ${isLandscapeMobile ? "flex-row" : "flex-col"}`}>
+        <div className={`game-container flex h-full ${isLandscapeMobile ? "flex-row game-layout-landscape" : "flex-col"}`}>
           {isLandscapeMobile ? (
             // Landscape mobile layout - sidebar on left
             <>
-              <div className="w-40 flex-shrink-0 flex flex-col justify-between p-2 glass">
-                {/* Top controls */}
+              <div className="sidebar-landscape glass">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
-                    <button className="btn-icon w-10 h-10" onClick={() => setShowExit(true)} data-testid="exit-button">
+                    <button className="btn-icon w-9 h-9" onClick={() => setShowExit(true)} data-testid="exit-button">
                       <X size={16} />
                     </button>
-                    <button className="btn-icon w-10 h-10" onClick={() => setShowSettings(true)} data-testid="settings-button">
+                    <button className="btn-icon w-9 h-9" onClick={() => setShowGuide(true)} data-testid="guide-button-game">
+                      <HelpCircle size={16} />
+                    </button>
+                    <button className="btn-icon w-9 h-9" onClick={() => setShowSettings(true)} data-testid="settings-button">
                       <Settings size={16} />
                     </button>
                   </div>
@@ -673,7 +843,6 @@ function App() {
                   </div>
                 </div>
                 
-                {/* Word bank vertical */}
                 <div className="flex flex-col gap-1 my-2 overflow-y-auto flex-1">
                   {words.map((w) => (
                     <span
@@ -685,7 +854,6 @@ function App() {
                   ))}
                 </div>
                 
-                {/* Controls vertical */}
                 <div className="flex flex-col gap-2">
                   <button
                     className={`btn-game btn-primary py-2 px-3 text-xs ${aiLoading ? "ai-thinking" : ""}`}
@@ -704,12 +872,12 @@ function App() {
                 </div>
               </div>
               
-              <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
+              <div className="main-landscape flex-1 flex items-center justify-center p-2 overflow-hidden">
                 {renderGameGrid()}
               </div>
             </>
           ) : (
-            // Portrait / Desktop layout
+            // Portrait / Tablet / Desktop layout
             <>
               {/* Top Bar */}
               <div className="top-bar flex items-center justify-between p-3 md:p-4 pt-5 md:pt-6 glass" data-testid="top-bar">
@@ -725,13 +893,16 @@ function App() {
                   ⏱️ {formatTime(timeLeft)}
                 </div>
                 
-                {/* Level selector in game */}
                 <button 
                   className="btn-icon text-sm font-bold"
                   onClick={() => setShowLevelSelect(true)}
                   data-testid="level-selector"
                 >
                   L{level}
+                </button>
+                
+                <button className="btn-icon" onClick={() => setShowGuide(true)} data-testid="guide-button-game">
+                  <HelpCircle size={18} />
                 </button>
                 
                 <button className="btn-icon" onClick={() => setShowSettings(true)} data-testid="settings-button">
@@ -748,11 +919,11 @@ function App() {
               {/* Selection Preview */}
               <div className="h-10 md:h-12 flex items-center justify-center glass-light" data-testid="selection-preview">
                 <span className="selection-preview">
-                  {selectionText || t.tap}
+                  {selectionText || t.tapOrSwipe}
                 </span>
               </div>
 
-              {/* Knowledge Banner / AI Hint */}
+              {/* Knowledge Banner */}
               <div className="knowledge-banner mx-3 md:mx-4 my-2 p-3 md:p-4 rounded-2xl text-center" data-testid="knowledge-banner">
                 <p className="text-xs md:text-sm text-white/90 relative z-10">
                   {aiHint || knowledgeText}
@@ -985,6 +1156,9 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Guide Modal */}
+      {showGuide && <GuideModal />}
     </div>
   );
 }
