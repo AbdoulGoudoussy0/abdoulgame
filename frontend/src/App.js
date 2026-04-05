@@ -412,11 +412,7 @@ function App() {
   };
 
   const selectCell = (r, c) => {
-    const isFound = foundWords.some((w) =>
-      w.coords.some((coord) => coord.r === r && coord.c === c)
-    );
-    if (isFound) return;
-
+    // Allow selecting cells even if they're part of a found word (for crossing words)
     const isSelected = selection.some((s) => s.r === r && s.c === c);
     
     if (!isSelected) {
