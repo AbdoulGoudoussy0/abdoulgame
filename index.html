@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AbdoulGame Ultimate Polyglot</title>
+
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --p: #00f2ff;
+            --s: #7000ff;
+            --ai: #ff00c8;
+            --success: #00ff88;
+            --error: #ff3e3e;
+            --bg: #020617;
+            --glass: rgba(255, 255, 255, 0.05);
+            --shadow: 0 8px 32px rgba(0, 242, 255, 0.1);
+        }
+
+        /* theme-neon uses default :root variables — acts as the default neon look */
+        body.theme-neon {
+            --p: #00f2ff;
+            --s: #7000ff;
+            --ai: #ff00c8;
+            --success: #00ff88;
+            --error: #ff3e3e;
+            --bg: #020617;
+            --shadow: 0 8px 32px rgba(0, 242, 255, 0.1);
+        }
+
+        body.theme-classic {
+            --p: #ffffff;
+            --s: #444444;
+            --bg: #111111;
+            --shadow: 0 8px 32px rgba(255, 255, 255, 0.05);
+        }
+
+        body.theme-gold {
+            --p: #ffcc00;
+            --s: #aa8800;
+            --bg: #0a0a05;
+            --shadow: 0 8px 32px rgba(255, 204, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, #1e1b4b, var(--bg));
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100dvh;
+            overflow: hidden;
+            user-select: none;
+            transition: all 0.6s ease;
+        }
+
+        /* ── SPLASH ────────────────────────────────────────────── */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0a0e27, #1a0033, #0a0e27);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            animation: splashFadeIn 0.6s ease;
+        }
+
+        @keyframes splashFadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .splash-logo {
+            font-size: 120px;
+            animation: splashPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.1); }
+        }
+
+        .splash-title {
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #00f2ff, #7000ff, #ff00c8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .splash-subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 3px;
+            margin: 0;
+        }
+
+        .loading-bar {
+            width: clamp(200px, 70vw, 300px);
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--p);
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--p), var(--s), var(--ai));
+            width: 0%;
+            animation: loading 2.5s ease-in-out forwards;
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--p);
+        }
+
+        @keyframes loading {
+            0%   { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        /* ── PROGRESS BAR ───────────────────────────────────────── */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, var(--p), var(--success));
+            transition: 0.5s ease;
+            box-shadow: 0 0 20px var(--p);
+        }
+
+        /* ── TOP BAR ────────────────────────────────────────────── */
+        .top-bar {
+            width: 100%;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
+            margin-top: 6px;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .stat-badge {
+            background: var(--glass);
+            padding: 7px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--p);
+            font-weight: 900;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .stat-badge.timer-warning {
+            border-color: var(--error);
+            color: var(--error);
+            animation: timerPulse 0.6s ease-in-out infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { box-shadow: 0 0 6px var(--error); }
+            50%       { box-shadow: 0 0 18px var(--error); }
+        }
+
+        .level-badge {
+            background: rgba(112,0,255,0.3);
+            padding: 7px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--s);
+            font-weight: 900;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        /* ── SCORE SHAKE ──────────────────────────────────────── */
+        @keyframes scoreshake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-5px); }
+            40%       { transform: translateX(5px); }
+            60%       { transform: translateX(-4px); }
+            80%       { transform: translateX(4px); }
+        }
+
+        .score-shake {
+            animation: scoreshake 0.4s ease !important;
+        }
+
+        /* ── SELECTION PREVIEW ──────────────────────────────────── */
+        .selection-preview {
+            width: 100%;
+            height: 38px;
+            background: rgba(112,0,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--p);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--s);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            backdrop-filter: blur(5px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        /* ── KNOWLEDGE BANNER ───────────────────────────────────── */
+        .knowledge-banner {
+            width: 92%;
+            margin: 8px 0;
+            padding: 14px;
+            background: rgba(0, 242, 255, 0.08);
+            border-radius: 16px;
+            border: 1px solid var(--p);
+            font-size: 0.9rem;
+            text-align: center;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease;
+            line-height: 1.6;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── GAME BOARD ─────────────────────────────────────────── */
+        #game-board {
+            margin: 8px;
+            background: var(--glass);
+            padding: 10px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: grid;
+            gap: 5px;
+            touch-action: none;
+            transition: 0.4s;
+            box-shadow: var(--shadow);
+            flex-shrink: 1;
+            overflow: auto;
+        }
+
+        .cell {
+            width: clamp(32px, 9vw, 46px);
+            height: clamp(32px, 9vw, 46px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #cbd5e1;
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            user-select: none;
+        }
+
+        .cell.active {
+            background: var(--s) !important;
+            color: white;
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 0 15px var(--s);
+        }
+
+        .cell.found {
+            background: var(--success) !important;
+            color: #000;
+            box-shadow: 0 0 20px var(--success);
+            pointer-events: none;
+            animation: pulse-found 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-found {
+            0%, 100% { box-shadow: 0 0 10px var(--success); }
+            50%       { box-shadow: 0 0 28px var(--success), 0 0 8px #fff; }
+        }
+
+        /* ── WORD BANK ──────────────────────────────────────────── */
+        #word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 10px;
+            max-height: 82px;
+            overflow-y: auto;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .word-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--p);
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: rgba(0, 242, 255, 0.08);
+            transition: all 0.4s ease;
+        }
+
+        .word-tag.found-tag {
+            opacity: 0.35;
+            text-decoration: line-through;
+            transform: translateX(14px);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* ── MODALS ─────────────────────────────────────────────── */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--s), var(--p));
+            color: white;
+            padding: 14px 32px;
+            border-radius: 20px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 8px 20px rgba(112, 0, 255, 0.3);
+            letter-spacing: 1px;
+            font-size: 1rem;
+        }
+
+        .btn-toggle {
+            background: var(--glass);
+            border: 1px solid var(--p);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-toggle.active {
+            background: var(--s);
+            border-color: var(--p);
+        }
+
+        .settings-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 30px;
+            width: min(380px, 90vw);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        input[type="range"] {
+            accent-color: var(--p);
+            width: 140px;
+        }
+
+        /* ── COMBO TOAST ────────────────────────────────────────── */
+        #combo-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, var(--ai), var(--s));
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        #combo-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body class="theme-neon">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" aria-label="Pantalla de carga">
+        <div class="splash-container">
+            <div class="splash-logo">🔥</div>
+            <h1 class="splash-title">ABDOULGAME</h1>
+            <p class="splash-subtitle">POLYGLOT ULTIMATE</p>
+            <div class="loading-bar"><div class="loading-progress"></div></div>
+            <p class="loading-text" id="loading-text">Cargando...</p>
+        </div>
+    </div>
+
+    <div class="progress-container"><div id="progress-bar"></div></div>
+
+    <!-- START MODAL -->
+    <div id="start-modal" class="modal" style="display: none;">
+        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
+        <p id="txt-ver" style="opacity: 0.7; margin-bottom: 40px;">POLYGLOT EDITION v20.0</p>
+        <button class="btn-main" onclick="startApp()" id="txt-start-btn">ENTRAR AL ESTADIO</button>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal" style="display: none; background: rgba(0,0,0,0.9);">
+        <div class="settings-card">
+            <h2 id="txt-settings-title" style="margin:0; color:var(--p)">SETTINGS</h2>
+            <div class="setting-item">
+                <span id="txt-vol-label">VOLUMEN</span>
+                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5" oninput="updateAudio()">
+            </div>
+            <div class="setting-item">
+                <span id="txt-lang-label">IDIOMA</span>
+                <button class="btn-toggle" onclick="toggleLang()" id="lang-val" style="font-size:1.3rem">🇪🇸</button>
+            </div>
+            <div class="setting-item">
+                <span id="txt-theme-label">TEMA</span>
+                <button class="btn-toggle" onclick="toggleTheme()" id="theme-val">NEON</button>
+            </div>
+            <div class="setting-item">
+                <span id="txt-vib-label">VIBRACIÓN</span>
+                <button class="btn-toggle active" onclick="toggleVib()" id="vib-val">ON</button>
+            </div>
+            <button class="btn-main" onclick="closeSettings()" id="txt-close">GUARDAR</button>
+        </div>
+    </div>
+
+    <!-- EXIT MODAL -->
+    <div id="exit-modal" class="modal" style="display: none; background: rgba(0,0,0,0.95);">
+        <h2 id="txt-exit-msg">¿SALIR DEL PARTIDO?</h2>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn-main" onclick="location.reload()" style="background:var(--error)" id="txt-exit-yes">SÍ</button>
+            <button class="btn-main" onclick="toggleExit()" id="txt-exit-no">NO</button>
+        </div>
+    </div>
+
+    <!-- WIN / GAME-OVER MODAL -->
+    <div id="win-modal" class="modal" style="display: none;">
+        <h2 id="win-title" style="font-size: 3.5rem; margin: 0;">¡GOOOOL!</h2>
+        <p id="win-sub" style="font-size: 1.1rem; opacity: 0.8; margin: 14px 0 30px 0;"></p>
+        <button class="btn-main" onclick="nextLevel()" id="txt-next">SIGUIENTE</button>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <button style="background:none; border:none; color:var(--error); font-size:1.5rem; cursor:pointer;" onclick="toggleExit()">✖</button>
+        <div class="stat-badge" id="timer-ui">⏱️ 02:00</div>
+        <div class="level-badge" id="level-badge">LVL 1</div>
+        <button style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;" onclick="openSettings()">⚙️</button>
+        <div class="stat-badge" id="score-badge">⭐ <span id="score-ui">0</span> | 🏆 <span id="hs-ui">0</span></div>
+    </div>
+
+    <!-- GAME AREA -->
+    <div class="selection-preview" id="selection-preview">...</div>
+    <div class="knowledge-banner" id="knowledge-text">Preparando sabiduría...</div>
+    <div id="game-board"></div>
+    <div id="word-bank"></div>
+
+    <!-- ACTION BUTTONS -->
+    <div style="display:flex; gap:15px; margin-top:auto; padding-bottom:20px; flex-wrap:wrap; justify-content:center; flex-shrink:0;">
+        <button class="btn-main" onclick="triggerAIHint()" id="txt-hint-btn" style="font-size: 0.8rem;">🤖 PISTA</button>
+        <button class="btn-main" onclick="clearSelection()" id="txt-clear-btn" style="background: var(--error); font-size: 0.8rem;">BORRAR</button>
+    </div>
+
+    <!-- COMBO TOAST -->
+    <div id="combo-toast"></div>
+
+    <!-- AUDIO -->
+    <audio id="bg-stadium" loop src="https://cdn.pixabay.com/audio/2022/02/22/audio_d0c6ff1101.mp3"></audio>
+    <audio id="snd-goal" src="https://www.myinstants.com/media/sounds/gol-de-messi.mp3"></audio>
+    <audio id="snd-correct" src="https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3"></audio>
+    <audio id="snd-lose" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════
+    //  SPLASH FAILSAFE
+    // ═══════════════════════════════════════════════════════════
+    (function setupSplash() {
+        const splash = document.getElementById('splash-screen');
+        const loadingText = document.getElementById('loading-text');
+
+        function hideSplash() {
+            if (!splash) return;
+            splash.classList.add('fade-out');
+            setTimeout(() => { try { splash.remove(); } catch (e) {} }, 900);
+        }
+
+        setTimeout(hideSplash, 2500);
+
+        ['error', 'unhandledrejection'].forEach(evt => {
+            window.addEventListener(evt, () => {
+                if (loadingText) loadingText.textContent = 'Error. Entrando…';
+                setTimeout(hideSplash, 800);
+            });
+        });
+    })();
+
+    // ═══════════════════════════════════════════════════════════
+    //  i18n
+    // ═══════════════════════════════════════════════════════════
+    const i18n = {
+        startBtn:    { ES: 'ENTRAR AL ESTADIO', EN: 'ENTER THE STADIUM', FR: 'ENTRER AU STADE' },
+        hintBtn:     { ES: '🤖 PISTA',          EN: '🤖 HINT',           FR: '🤖 INDICE' },
+        clearBtn:    { ES: 'BORRAR',             EN: 'CLEAR',             FR: 'EFFACER' },
+        next:        { ES: 'SIGUIENTE',          EN: 'NEXT',              FR: 'SUIVANT' },
+        exit:        { ES: '¿SALIR DEL PARTIDO?',EN: 'QUIT THE GAME?',    FR: 'QUITTER?' },
+        exitYes:     { ES: 'SÍ',                 EN: 'YES',               FR: 'OUI' },
+        exitNo:      { ES: 'NO',                 EN: 'NO',                FR: 'NON' },
+        settings:    { ES: 'AJUSTES',            EN: 'SETTINGS',          FR: 'PARAMÈTRES' },
+        volLabel:    { ES: 'VOLUMEN',             EN: 'VOLUME',            FR: 'VOLUME' },
+        langLabel:   { ES: 'IDIOMA',             EN: 'LANGUAGE',          FR: 'LANGUE' },
+        themeLabel:  { ES: 'TEMA',               EN: 'THEME',             FR: 'THÈME' },
+        vibLabel:    { ES: 'VIBRACIÓN',          EN: 'VIBRATION',         FR: 'VIBRATION' },
+        saveBtn:     { ES: 'GUARDAR',            EN: 'SAVE',              FR: 'ENREGISTRER' },
+        preparing:   { ES: 'Preparando sabiduría...', EN: 'Preparing wisdom...', FR: 'Préparation de la sagesse...' },
+        win:         { ES: '¡GOOOOL!',           EN: 'GOAAAL!',           FR: 'BUUUT!' },
+        timeup:      { ES: '¡TIEMPO!',           EN: 'TIME OUT!',         FR: 'TEMPS ÉCOULÉ!' },
+        timeupSub:   { ES: 'TIEMPO AGOTADO',     EN: 'TIME OUT',          FR: 'TEMPS ÉCOULÉ' },
+        winSub:      { ES: '¡Nivel completado!', EN: 'Level complete!',   FR: 'Niveau terminé!' },
+        combo:       { ES: 'COMBO',              EN: 'COMBO',             FR: 'COMBO' },
+        level:       { ES: 'NIV',               EN: 'LVL',               FR: 'NIV' },
+        noScore:     { ES: '¡Sin puntos!',       EN: 'No points!',        FR: 'Pas de points!' },
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    //  KNOWLEDGE DATABASE (10 entries)
+    // ═══════════════════════════════════════════════════════════
+    const KNOWLEDGE_DB = [
+        {
+            id: 'freedom',
+            ES: 'LIBERTAD', EN: 'FREEDOM', FR: 'LIBERTE',
+            infoES: 'La libertad es el derecho a actuar según tu propia voluntad.',
+            infoEN: 'Freedom is the right to act according to your own will.',
+            infoFR: 'La liberté est le droit d\'agir selon sa propre volonté.'
+        },
+        {
+            id: 'peace',
+            ES: 'PAZ', EN: 'PEACE', FR: 'PAIX',
+            infoES: 'La paz interior es la base de toda armonía.',
+            infoEN: 'Inner peace is the foundation of all harmony.',
+            infoFR: 'La paix intérieure est la base de toute harmonie.'
+        },
+        {
+            id: 'strength',
+            ES: 'FUERZA', EN: 'STRENGTH', FR: 'FORCE',
+            infoES: 'La verdadera fuerza viene de superar tus propios límites.',
+            infoEN: 'True strength comes from surpassing your own limits.',
+            infoFR: 'La vraie force vient de dépasser ses propres limites.'
+        },
+        {
+            id: 'unity',
+            ES: 'UNIDAD', EN: 'UNITY', FR: 'UNITE',
+            infoES: 'La unidad hace la fuerza.',
+            infoEN: 'Unity makes strength.',
+            infoFR: 'L\'union fait la force.'
+        },
+        {
+            id: 'knowledge',
+            ES: 'SABER', EN: 'KNOWLEDGE', FR: 'SAVOIR',
+            infoES: 'El conocimiento es el poder más grande que existe.',
+            infoEN: 'Knowledge is the greatest power that exists.',
+            infoFR: 'Le savoir est le plus grand pouvoir qui existe.'
+        },
+        {
+            id: 'courage',
+            ES: 'VALOR', EN: 'COURAGE', FR: 'COURAGE',
+            infoES: 'El valor es actuar a pesar del miedo.',
+            infoEN: 'Courage is acting despite fear.',
+            infoFR: 'Le courage c\'est agir malgré la peur.'
+        },
+        {
+            id: 'wisdom',
+            ES: 'SABIDURIA', EN: 'WISDOM', FR: 'SAGESSE',
+            infoES: 'La sabiduría es el fruto de la experiencia.',
+            infoEN: 'Wisdom is the fruit of experience.',
+            infoFR: 'La sagesse est le fruit de l\'expérience.'
+        },
+        {
+            id: 'justice',
+            ES: 'JUSTICIA', EN: 'JUSTICE', FR: 'JUSTICE',
+            infoES: 'La justicia equilibra el mundo.',
+            infoEN: 'Justice balances the world.',
+            infoFR: 'La justice équilibre le monde.'
+        },
+        {
+            id: 'discipline',
+            ES: 'DISCIPLINA', EN: 'DISCIPLINE', FR: 'DISCIPLINE',
+            infoES: 'La disciplina construye campeones.',
+            infoEN: 'Discipline builds champions.',
+            infoFR: 'La discipline forge les champions.'
+        },
+        {
+            id: 'respect',
+            ES: 'RESPETO', EN: 'RESPECT', FR: 'RESPECT',
+            infoES: 'El respeto es la base de toda relación.',
+            infoEN: 'Respect is the foundation of all relationships.',
+            infoFR: 'Le respect est la base de toute relation.'
+        }
+    ];
+
+    // ═══════════════════════════════════════════════════════════
+    //  CONFIG / STATE
+    // ═══════════════════════════════════════════════════════════
+    const config = {
+        lang:      'ES',
+        theme:     'neon',
+        vibration: true,
+        volume:    0.5,
+        score:     0,
+        highScore: parseInt(localStorage.getItem('abdoulgame_highscore') || '0', 10),
+        level:     1,
+        timerInterval: null,
+        timeLeft:  120,
+        comboCount:    0,
+        lastFindTime:  0,
+        comboTimeout:  null,
+    };
+
+    const GRID_SIZE   = 8;
+    const WORDS_COUNT = 4;
+    const HINT_COST   = 100;
+    const WORD_SCORE  = 200;
+    const COMBO_WINDOW_MS = 5000;
+
+    let grid      = [];
+    let words     = [];
+    let selection = [];
+    let found     = [];
+
+    // ═══════════════════════════════════════════════════════════
+    //  AUDIO HELPERS
+    // ═══════════════════════════════════════════════════════════
+    function playSound(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.volume = config.volume;
+        el.currentTime = 0;
+        el.play().catch(() => {});
+    }
+
+    function updateAudio() {
+        config.volume = parseFloat(document.getElementById('vol-slider').value);
+        const bg = document.getElementById('bg-stadium');
+        if (bg) bg.volume = config.volume;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  VIBRATION
+    // ═══════════════════════════════════════════════════════════
+    function vib(ms) {
+        if (config.vibration && navigator.vibrate) navigator.vibrate(ms);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  UI TEXT — apply i18n
+    // ═══════════════════════════════════════════════════════════
+    function applyLang() {
+        const L = config.lang;
+        const set = (id, key) => {
+            const el = document.getElementById(id);
+            if (el && i18n[key]) el.textContent = i18n[key][L];
+        };
+        set('txt-start-btn',   'startBtn');
+        set('txt-hint-btn',    'hintBtn');
+        set('txt-clear-btn',   'clearBtn');
+        set('txt-next',        'next');
+        set('txt-exit-msg',    'exit');
+        set('txt-exit-yes',    'exitYes');
+        set('txt-exit-no',     'exitNo');
+        set('txt-settings-title', 'settings');
+        set('txt-vol-label',   'volLabel');
+        set('txt-lang-label',  'langLabel');
+        set('txt-theme-label', 'themeLabel');
+        set('txt-vib-label',   'vibLabel');
+        set('txt-close',       'saveBtn');
+
+        const flags = { ES: '🇪🇸', EN: '🇬🇧', FR: '🇫🇷' };
+        const lv = document.getElementById('lang-val');
+        if (lv) lv.textContent = flags[L];
+
+        const lb = document.getElementById('level-badge');
+        if (lb) lb.textContent = `${i18n.level[L]} ${config.level}`;
+
+        updateWordBank();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SCORE / HIGH SCORE
+    // ═══════════════════════════════════════════════════════════
+    function addScore(pts) {
+        config.score += pts;
+        if (config.score < 0) config.score = 0;
+        if (config.score > config.highScore) {
+            config.highScore = config.score;
+            localStorage.setItem('abdoulgame_highscore', config.highScore);
+        }
+        updateScoreUI();
+    }
+
+    function updateScoreUI() {
+        const s = document.getElementById('score-ui');
+        const h = document.getElementById('hs-ui');
+        if (s) s.textContent = config.score;
+        if (h) h.textContent = config.highScore;
+    }
+
+    function shakeScoreBadge() {
+        const badge = document.getElementById('score-badge');
+        if (!badge) return;
+        badge.classList.remove('score-shake');
+        void badge.offsetWidth; // reflow to restart animation
+        badge.classList.add('score-shake');
+        setTimeout(() => badge.classList.remove('score-shake'), 500);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TIMER
+    // ═══════════════════════════════════════════════════════════
+    function startTimer() {
+        clearInterval(config.timerInterval);
+        config.timeLeft = 120;
+        updateTimerUI();
+
+        config.timerInterval = setInterval(() => {
+            config.timeLeft--;
+            updateTimerUI();
+
+            // Warning at 10 seconds remaining
+            const timerEl = document.getElementById('timer-ui');
+            if (config.timeLeft <= 10 && config.timeLeft > 0) {
+                if (timerEl) timerEl.classList.add('timer-warning');
+            } else {
+                if (timerEl) timerEl.classList.remove('timer-warning');
+            }
+
+            // Timer expired
+            if (config.timeLeft <= 0) {
+                clearInterval(config.timerInterval);
+                config.timerInterval = null;
+                if (timerEl) timerEl.classList.remove('timer-warning');
+                resetCombo();
+                playSound('snd-lose');
+                showTimeUpModal();
+                setTimeout(() => {
+                    hideWinModal();
+                    loadLevel();
+                }, 2500);
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(config.timerInterval);
+        config.timerInterval = null;
+        const timerEl = document.getElementById('timer-ui');
+        if (timerEl) timerEl.classList.remove('timer-warning');
+    }
+
+    function updateTimerUI() {
+        const el = document.getElementById('timer-ui');
+        if (!el) return;
+        const m = Math.floor(Math.max(0, config.timeLeft) / 60);
+        const s = Math.max(0, config.timeLeft) % 60;
+        el.textContent = `⏱️ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  WIN / TIME-UP MODALS
+    // ═══════════════════════════════════════════════════════════
+    function showWinModal() {
+        const modal = document.getElementById('win-modal');
+        const title = document.getElementById('win-title');
+        const sub   = document.getElementById('win-sub');
+        if (!modal) return;
+        if (title) {
+            title.textContent = i18n.win[config.lang];
+            title.style.color = 'var(--success)';
+        }
+        if (sub) sub.textContent = i18n.winSub[config.lang];
+        modal.style.display = 'flex';
+    }
+
+    function showTimeUpModal() {
+        const modal = document.getElementById('win-modal');
+        const title = document.getElementById('win-title');
+        const sub   = document.getElementById('win-sub');
+        if (!modal) return;
+        if (title) {
+            title.textContent = i18n.timeup[config.lang];
+            title.style.color = 'var(--error)';
+        }
+        if (sub) sub.textContent = i18n.timeupSub[config.lang];
+        modal.style.display = 'flex';
+    }
+
+    function hideWinModal() {
+        const modal = document.getElementById('win-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  COMBO SYSTEM
+    // ═══════════════════════════════════════════════════════════
+    function registerFind() {
+        const now = Date.now();
+        if (now - config.lastFindTime <= COMBO_WINDOW_MS) {
+            config.comboCount++;
+        } else {
+            config.comboCount = 1;
+        }
+        config.lastFindTime = now;
+
+        clearTimeout(config.comboTimeout);
+        config.comboTimeout = setTimeout(resetCombo, COMBO_WINDOW_MS);
+
+        if (config.comboCount > 1) {
+            const bonus = WORD_SCORE * (config.comboCount - 1);
+            showComboToast(config.comboCount, bonus);
+            return bonus;
+        }
+        return 0;
+    }
+
+    function resetCombo() {
+        config.comboCount  = 0;
+        config.lastFindTime = 0;
+        clearTimeout(config.comboTimeout);
+    }
+
+    function showComboToast(count, bonus) {
+        const toast = document.getElementById('combo-toast');
+        if (!toast) return;
+        toast.textContent = `${i18n.combo[config.lang]} x${count}! +${bonus}pts`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  WORD BANK
+    // ═══════════════════════════════════════════════════════════
+    function buildWordBank() {
+        const bank = document.getElementById('word-bank');
+        if (!bank) return;
+        bank.innerHTML = '';
+        words.forEach(w => {
+            const tag = document.createElement('span');
+            tag.className = 'word-tag';
+            tag.id        = `tag-${w}`;
+            tag.textContent = w;
+            bank.appendChild(tag);
+        });
+    }
+
+    function updateWordBank() {
+        words.forEach(w => {
+            const tag = document.getElementById(`tag-${w}`);
+            if (!tag) return;
+            // Rebuild tag text using current lang word if needed
+            // (words array always holds current-lang words after loadLevel)
+        });
+    }
+
+    function markWordFound(word) {
+        const tag = document.getElementById(`tag-${word}`);
+        if (!tag) return;
+        tag.textContent = `✅ ${word}`;
+        tag.classList.add('found-tag');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  GRID GENERATION
+    // ═══════════════════════════════════════════════════════════
+    function createEmptyGrid(size) {
+        return Array.from({ length: size }, () => Array(size).fill(''));
+    }
+
+    function placeWord(g, word) {
+        const dirs = [
+            [0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]
+        ];
+        for (let attempt = 0; attempt < 200; attempt++) {
+            const dir = dirs[Math.floor(Math.random() * dirs.length)];
+            const row = Math.floor(Math.random() * GRID_SIZE);
+            const col = Math.floor(Math.random() * GRID_SIZE);
+            let r = row, c = col, ok = true;
+            for (let i = 0; i < word.length; i++) {
+                if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) { ok = false; break; }
+                if (g[r][c] !== '' && g[r][c] !== word[i]) { ok = false; break; }
+                r += dir[0]; c += dir[1];
+            }
+            if (ok) {
+                r = row; c = col;
+                for (let i = 0; i < word.length; i++) {
+                    g[r][c] = word[i];
+                    r += dir[0]; c += dir[1];
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function fillGrid(g) {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                if (!g[r][c]) g[r][c] = letters[Math.floor(Math.random() * letters.length)];
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  RENDER BOARD
+    // ═══════════════════════════════════════════════════════════
+    function renderBoard() {
+        const board = document.getElementById('game-board');
+        if (!board) return;
+        board.innerHTML = '';
+        board.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = grid[r][c];
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.addEventListener('pointerdown', e => { e.preventDefault(); select(r, c); });
+                board.appendChild(cell);
+            }
+        }
+    }
+
+    function getCellEl(r, c) {
+        return document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SELECTION
+    // ═══════════════════════════════════════════════════════════
+    function select(r, c) {
+        const cell = getCellEl(r, c);
+        if (!cell) return;
+
+        // Toggle deselect: if cell already active, clear the whole selection
+        const existing = selection.findIndex(s => s.r === r && s.c === c);
+        if (existing !== -1) {
+            clearSelection();
+            return;
+        }
+
+        selection.push({ r, c });
+        cell.classList.add('active');
+
+        const preview = document.getElementById('selection-preview');
+        if (preview) preview.textContent = selection.map(s => grid[s.r][s.c]).join('');
+
+        vib(15);
+        check();
+    }
+
+    function clearSelection() {
+        selection.forEach(s => {
+            const cell = getCellEl(s.r, s.c);
+            // Only remove 'active' class; never touch 'found' cells
+            if (cell && !cell.classList.contains('found')) {
+                cell.classList.remove('active');
+            }
+        });
+        selection = [];
+        const preview = document.getElementById('selection-preview');
+        if (preview) preview.textContent = '...';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CHECK (called on every tap — live feedback)
+    // ═══════════════════════════════════════════════════════════
+    function check() {
+        const current = selection.map(s => grid[s.r][s.c]).join('');
+        const match   = words.find(w => w === current && !found.includes(w));
+        if (!match) return;
+
+        // Mark cells as found
+        selection.forEach(s => {
+            const cell = getCellEl(s.r, s.c);
+            if (cell) {
+                cell.classList.remove('active');
+                cell.classList.add('found');
+            }
+        });
+
+        found.push(match);
+        markWordFound(match);
+        playSound('snd-correct');
+        vib([50, 30, 50]);
+
+        // Score: base + combo bonus
+        const base  = WORD_SCORE;
+        const bonus = registerFind();
+        addScore(base + bonus);
+
+        // Show knowledge info
+        const entry = KNOWLEDGE_DB.find(k => k[config.lang] === match);
+        if (entry) {
+            const banner = document.getElementById('knowledge-text');
+            const infoKey = 'info' + config.lang;
+            if (banner) {
+                banner.style.animation = 'none';
+                void banner.offsetWidth;
+                banner.style.animation = 'fadeIn 0.5s ease';
+                banner.textContent = entry[infoKey] || entry.infoES;
+            }
+        }
+
+        clearSelection();
+
+        // Progress bar
+        const pct = (found.length / words.length) * 100;
+        const pb  = document.getElementById('progress-bar');
+        if (pb) pb.style.width = pct + '%';
+
+        // Level complete
+        if (found.length === words.length) {
+            stopTimer();
+            resetCombo();
+            playSound('snd-goal');
+            confetti({ particleCount: 160, spread: 90, origin: { y: 0.5 } });
+            if (config.score > config.highScore) {
+                config.highScore = config.score;
+                localStorage.setItem('abdoulgame_highscore', config.highScore);
+            }
+            updateScoreUI();
+            setTimeout(showWinModal, 500);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  AI HINT
+    // ═══════════════════════════════════════════════════════════
+    function triggerAIHint() {
+        if (config.score < HINT_COST) {
+            shakeScoreBadge();
+            const toast = document.getElementById('combo-toast');
+            if (toast) {
+                toast.textContent = i18n.noScore[config.lang];
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 1600);
+            }
+            return;
+        }
+
+        const remaining = words.filter(w => !found.includes(w));
+        if (!remaining.length) return;
+
+        addScore(-HINT_COST);
+        playSound('snd-correct');
+
+        // Reveal first letter of a random unfound word on the board
+        const target = remaining[Math.floor(Math.random() * remaining.length)];
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                if (grid[r][c] === target[0]) {
+                    const cell = getCellEl(r, c);
+                    if (cell && !cell.classList.contains('found')) {
+                        cell.style.background = 'var(--ai)';
+                        cell.style.color      = '#fff';
+                        setTimeout(() => {
+                            cell.style.background = '';
+                            cell.style.color      = '';
+                        }, 2000);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  LOAD LEVEL
+    // ═══════════════════════════════════════════════════════════
+    function loadLevel() {
+        hideWinModal();
+        resetCombo();
+        found      = [];
+        selection  = [];
+
+        // Pick WORDS_COUNT entries from the DB, cycling by level
+        const start  = ((config.level - 1) * WORDS_COUNT) % KNOWLEDGE_DB.length;
+        const pool   = [];
+        for (let i = 0; i < WORDS_COUNT; i++) {
+            pool.push(KNOWLEDGE_DB[(start + i) % KNOWLEDGE_DB.length]);
+        }
+        words = pool.map(e => e[config.lang]);
+
+        // Build grid
+        grid = createEmptyGrid(GRID_SIZE);
+        words.forEach(w => placeWord(grid, w));
+        fillGrid(grid);
+
+        renderBoard();
+        buildWordBank();
+
+        // Progress bar reset
+        const pb = document.getElementById('progress-bar');
+        if (pb) pb.style.width = '0%';
+
+        // Knowledge banner
+        const banner = document.getElementById('knowledge-text');
+        if (banner) banner.textContent = i18n.preparing[config.lang];
+
+        // Level badge
+        const lb = document.getElementById('level-badge');
+        if (lb) lb.textContent = `${i18n.level[config.lang]} ${config.level}`;
+
+        applyLang();
+        startTimer();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  NEXT LEVEL
+    // ═══════════════════════════════════════════════════════════
+    function nextLevel() {
+        config.level++;
+        loadLevel();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  APP ENTRY
+    // ═══════════════════════════════════════════════════════════
+    function startApp() {
+        const m = document.getElementById('start-modal');
+        if (m) m.style.display = 'none';
+
+        const bg = document.getElementById('bg-stadium');
+        if (bg) {
+            bg.volume = config.volume;
+            bg.play().catch(() => {});
+        }
+
+        loadLevel();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SETTINGS
+    // ═══════════════════════════════════════════════════════════
+    const LANGS   = ['ES', 'EN', 'FR'];
+    const THEMES  = ['neon', 'classic', 'gold'];
+    const THEME_LABELS = { neon: 'NEON', classic: 'CLASSIC', gold: 'GOLD' };
+
+    function toggleLang() {
+        const idx = LANGS.indexOf(config.lang);
+        config.lang = LANGS[(idx + 1) % LANGS.length];
+        applyLang();
+        // Reload level in new language
+        loadLevel();
+    }
+
+    function toggleTheme() {
+        const idx = THEMES.indexOf(config.theme);
+        config.theme = THEMES[(idx + 1) % THEMES.length];
+        document.body.className = `theme-${config.theme}`;
+        const tv = document.getElementById('theme-val');
+        if (tv) tv.textContent = THEME_LABELS[config.theme];
+    }
+
+    function toggleVib() {
+        config.vibration = !config.vibration;
+        const btn = document.getElementById('vib-val');
+        if (btn) {
+            btn.textContent = config.vibration ? 'ON' : 'OFF';
+            btn.classList.toggle('active', config.vibration);
+        }
+    }
+
+    function openSettings() {
+        const m = document.getElementById('settings-modal');
+        if (m) m.style.display = 'flex';
+    }
+
+    function closeSettings() {
+        const m = document.getElementById('settings-modal');
+        if (m) m.style.display = 'none';
+    }
+
+    function toggleExit() {
+        const m = document.getElementById('exit-modal');
+        if (!m) return;
+        m.style.display = (m.style.display === 'none' || !m.style.display) ? 'flex' : 'none';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  INIT — show start modal once load completes
+    // ═══════════════════════════════════════════════════════════
+    window.addEventListener('load', () => {
+        const m = document.getElementById('start-modal');
+        if (m) m.style.display = 'flex';
+        updateScoreUI();
+        applyLang();
+    });
+    </script>
+</body>
+</html>
