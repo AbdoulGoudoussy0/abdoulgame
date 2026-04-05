@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>AbdoulGame Ultimate Polyglot</title>
-    
+
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8065/8065416.png">
     <link rel="manifest" href="manifest.json">
@@ -14,48 +14,48 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        :root { 
-            --p: #00f2ff; 
-            --s: #7000ff; 
-            --ai: #ff00c8; 
-            --success: #00ff88; 
-            --error: #ff3e3e; 
-            --bg: #020617; 
+        :root {
+            --p: #00f2ff;
+            --s: #7000ff;
+            --ai: #ff00c8;
+            --success: #00ff88;
+            --error: #ff3e3e;
+            --bg: #020617;
             --glass: rgba(255, 255, 255, 0.05);
             --shadow: 0 8px 32px rgba(0, 242, 255, 0.1);
         }
-        
-        body.theme-classic { 
-            --p: #ffffff; 
-            --s: #444444; 
+
+        body.theme-classic {
+            --p: #ffffff;
+            --s: #444444;
             --bg: #111111;
             --shadow: 0 8px 32px rgba(255, 255, 255, 0.05);
         }
-        
-        body.theme-gold { 
-            --p: #ffcc00; 
-            --s: #aa8800; 
+
+        body.theme-gold {
+            --p: #ffcc00;
+            --s: #aa8800;
             --bg: #0a0a05;
             --shadow: 0 8px 32px rgba(255, 204, 0, 0.08);
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            outline: none; 
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
-        
+
         body {
-            font-family: 'Outfit', sans-serif; 
+            font-family: 'Outfit', sans-serif;
             background: var(--bg);
             background-image: radial-gradient(circle at 50% 0%, #1e1b4b, var(--bg));
-            color: white; 
-            margin: 0; 
-            display: flex; 
+            color: white;
+            margin: 0;
+            display: flex;
             flex-direction: column;
-            align-items: center; 
-            height: 100dvh; 
-            overflow: hidden; 
+            align-items: center;
+            height: 100dvh;
+            overflow: hidden;
             user-select: none;
             transition: all 0.6s ease;
         }
@@ -154,61 +154,61 @@
             letter-spacing: 1px;
         }
 
-        .progress-container { 
-            width: 100%; 
-            height: 6px; 
-            background: rgba(255,255,255,0.1); 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            z-index: 1000; 
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
             box-shadow: 0 2px 10px rgba(0, 242, 255, 0.2);
         }
 
-        #progress-bar { 
-            width: 0%; 
-            height: 100%; 
-            background: linear-gradient(to right, var(--p), var(--success)); 
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(to right, var(--p), var(--success));
             transition: 0.5s ease;
             box-shadow: 0 0 20px var(--p);
         }
 
-        .top-bar { 
-            width: 100%; 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: rgba(0,0,0,0.6); 
+        .top-bar {
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
             margin-top: 6px;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             gap: 10px;
         }
 
-        .stat-badge { 
-            background: var(--glass); 
-            padding: 8px 14px; 
-            border-radius: 12px; 
-            border: 1px solid var(--p); 
-            font-weight: 900; 
+        .stat-badge {
+            background: var(--glass);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--p);
+            font-weight: 900;
             font-size: 0.9rem;
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
             white-space: nowrap;
         }
-        
-        .selection-preview { 
-            width: 100%; 
-            height: 40px; 
-            background: rgba(112,0,255,0.15); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: 900; 
-            color: var(--p); 
-            font-size: 1.15rem; 
-            border-bottom: 1px solid var(--s); 
+
+        .selection-preview {
+            width: 100%;
+            height: 40px;
+            background: rgba(112,0,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--p);
+            font-size: 1.15rem;
+            border-bottom: 1px solid var(--s);
             text-transform: uppercase;
             letter-spacing: 2px;
             backdrop-filter: blur(5px);
@@ -216,18 +216,18 @@
             text-overflow: ellipsis;
         }
 
-        .knowledge-banner { 
-            width: 92%; 
-            margin: 10px 0; 
-            padding: 18px; 
-            background: rgba(0, 242, 255, 0.08); 
-            border-radius: 18px; 
-            border: 1px solid var(--p); 
-            font-size: 0.95rem; 
+        .knowledge-banner {
+            width: 92%;
+            margin: 10px 0;
+            padding: 18px;
+            background: rgba(0, 242, 255, 0.08);
+            border-radius: 18px;
+            border: 1px solid var(--p);
+            font-size: 0.95rem;
             text-align: center;
-            min-height: 80px; 
-            display: flex; 
-            align-items: center; 
+            min-height: 80px;
+            display: flex;
+            align-items: center;
             justify-content: center;
             box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
@@ -241,276 +241,84 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        #game-board { 
-            margin: 10px; 
-            background: var(--glass); 
-            padding: 12px; 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            display: grid; 
-            gap: 6px; 
-            touch-action: none; 
+        #game-board {
+            margin: 10px;
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: grid;
+            gap: 6px;
+            touch-action: none;
             transition: 0.4s;
             box-shadow: var(--shadow);
             flex-shrink: 1;
             overflow: auto;
         }
-        
-        .cell { 
-            width: clamp(34px, 9.5vw, 48px); 
-            height: clamp(34px, 9.5vw, 48px); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: 900; 
-            font-size: 1.15rem; 
-            border-radius: 8px; 
-            background: rgba(255,255,255,0.05); 
-            color: #cbd5e1; 
+
+        .cell {
+            width: clamp(34px, 9.5vw, 48px);
+            height: clamp(34px, 9.5vw, 48px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.15rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #cbd5e1;
             transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: pointer;
             border: 1px solid rgba(255,255,255,0.1);
             user-select: none;
         }
 
-        .cell:hover {
-            background: rgba(255,255,255,0.08);
-        }
-
-        .cell.active { 
-            background: var(--s) !important; 
-            color: white; 
+        .cell.active {
+            background: var(--s) !important;
+            color: white;
             transform: scale(1.2);
             z-index: 10;
             box-shadow: 0 0 15px var(--s);
         }
 
-        .cell.found { 
-            background: var(--success) !important; 
-            color: #000; 
+        .cell.found {
+            background: var(--success) !important;
+            color: #000;
             box-shadow: 0 0 20px var(--success);
-            animation: foundPulse 0.6s ease;
             pointer-events: none;
         }
 
-        @keyframes foundPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .modal { 
-            position: fixed; 
-            inset: 0; 
-            background: var(--bg); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 2000; 
-            text-align: center; 
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            text-align: center;
             padding: 20px;
             backdrop-filter: blur(5px);
             overflow-y: auto;
         }
-        
-        .settings-card { 
-            background: rgba(15, 23, 42, 0.98); 
-            backdrop-filter: blur(30px); 
-            border: 2px solid var(--p); 
-            border-radius: 35px; 
-            width: 95%; 
-            max-width: 480px; 
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.3s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
 
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .setting-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            width: 100%; 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            padding: 12px 0; 
-            font-weight: 600;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .setting-item:last-of-type {
-            border-bottom: none;
-        }
-        
-        .btn-toggle { 
-            background: var(--glass); 
-            border: 1.5px solid var(--p); 
-            color: white; 
-            padding: 10px 16px; 
-            border-radius: 12px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            min-width: 90px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            flex-shrink: 0;
-        }
-
-        .btn-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-toggle.active { 
-            background: var(--success) !important; 
-            color: #000 !important; 
-            border-color: var(--success) !important;
-            box-shadow: 0 0 20px var(--success);
-        }
-
-        .btn-main { 
-            background: linear-gradient(135deg, var(--s), var(--p)); 
-            color: white; 
-            padding: 14px 32px; 
-            border-radius: 20px; 
-            font-weight: 900; 
-            border: none; 
-            cursor: pointer; 
+        .btn-main {
+            background: linear-gradient(135deg, var(--s), var(--p));
+            color: white;
+            padding: 14px 32px;
+            border-radius: 20px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
             text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 8px 20px rgba(112, 0, 255, 0.3);
             letter-spacing: 1px;
             font-size: 1rem;
         }
 
-        .btn-main:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(112, 0, 255, 0.5);
-        }
-
-        .btn-main:active {
-            transform: scale(0.95);
-        }
-
-        .word-tag { 
-            padding: 8px 14px; 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 12px; 
-            font-size: 0.9rem; 
-            border: 1px solid rgba(255,255,255,0.1);
-            font-weight: 700;
-            transition: all 0.3s ease;
-            cursor: default;
-            white-space: nowrap;
-        }
-
-        .word-tag:hover:not(.done) {
-            background: rgba(255,255,255,0.1);
-            border-color: var(--p);
-        }
-
-        .word-tag.done { 
-            background: var(--success); 
-            color: #000; 
-            opacity: 0.4; 
-            text-decoration: line-through;
-            animation: wordFoundAnim 0.6s ease;
-        }
-
-        @keyframes wordFoundAnim {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(1.1) rotate(5deg); }
-            100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
-        }
-
-        #vol-slider {
-            width: 140px;
-            cursor: pointer;
-            accent-color: var(--p);
-            flex-shrink: 0;
-        }
-
-        .save-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--success);
-            color: #000;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-weight: 900;
-            z-index: 3000;
-            animation: slideInRight 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(200px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(200px); opacity: 0; }
-        }
-
-        .save-indicator.hide {
-            animation: slideOutRight 0.3s ease;
-        }
-
-        .level-indicator {
-            position: fixed;
-            top: 70px;
-            left: 20px;
-            background: var(--glass);
-            padding: 8px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--p);
-            font-weight: 900;
-            font-size: 0.85rem;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            z-index: 999;
-        }
-
-        .combo-counter {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            background: var(--glass);
-            padding: 8px 16px;
-            border-radius: 12px;
-            border: 1px solid var(--ai);
-            font-weight: 900;
-            font-size: 0.85rem;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            color: var(--ai);
-            z-index: 999;
-        }
-
-        .combo-counter.active {
-            animation: comboPulse 0.3s ease;
-            box-shadow: 0 0 20px var(--ai);
-        }
-
-        @keyframes comboPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
-
         #word-bank {
+            display: flex;
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
@@ -519,69 +327,37 @@
             overflow-y: auto;
             width: 100%;
         }
-
-        @media (max-width: 479px) {
-            .stat-badge { padding: 6px 10px; font-size: 0.75rem; }
-            .top-bar { padding: 10px 12px; gap: 5px; }
-            .cell { width: clamp(28px, 8vw, 40px); height: clamp(28px, 8vw, 40px); }
-        }
     </style>
 </head>
 <body class="theme-neon">
 
     <!-- SPLASH SCREEN -->
-    <div id="splash-screen">
+    <div id="splash-screen" aria-label="Pantalla de carga">
         <div class="splash-container">
             <div class="splash-logo">🔥</div>
             <h1 class="splash-title">AbdoulGame</h1>
             <p class="splash-subtitle">POLYGLOT ULTIMATE</p>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-            <p class="loading-text">Cargando...</p>
+            <div class="loading-bar"><div class="loading-progress"></div></div>
+            <p class="loading-text" id="loading-text">Cargando...</p>
         </div>
     </div>
 
     <div class="progress-container"><div id="progress-bar"></div></div>
 
     <div class="level-indicator">🎯 NIVEL <span id="level-num">1</span></div>
-    <div class="combo-counter">🔥 RACHA: <span id="combo-count">0</span></div>
+    <div class="combo-counter" style="display:none">🔥 RACHA: <span id="combo-count">0</span></div>
 
     <!-- START MODAL -->
     <div id="start-modal" class="modal" style="display: none;">
-        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDOULGAME</h1>
-        <p id="txt-ver" style="opacity: 0.7; margin: 10px 0 30px 0;">v20.1 - POLYGLOT EDITION</p>
+        <h1 style="font-size: 3.5rem; margin: 0; font-weight: 900; background: linear-gradient(to right, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ABDoulGAME</h1>
+        <p id="txt-ver" style="opacity: 0.7; margin: 10px 0 30px 0;">v20.2 - POLYGLOT EDITION</p>
         <button class="btn-main" onclick="startApp()" id="txt-start-btn">ENTRAR</button>
     </div>
 
-    <!-- SETTINGS MODAL -->
+    <!-- SETTINGS MODAL (placeholder minimal) -->
     <div id="settings-modal" class="modal" style="display: none; background: rgba(0,0,0,0.9);">
-        <div class="settings-card">
-            <h2 id="txt-settings-title" style="margin:0; color:var(--p)">AJUSTES</h2>
-            
-            <div class="setting-item"> 
-                <span id="txt-vol-label">VOLUMEN</span>
-                <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.5" onchange="updateAudio()"> 
-            </div>
-
-            <div class="setting-item"> 
-                <span id="txt-lang-label">IDIOMA</span>
-                <button class="btn-toggle" onclick="toggleLang()" id="lang-val" style="font-size:1.3rem">🇪🇸</button> 
-            </div>
-
-            <div class="setting-item"> 
-                <span id="txt-theme-label">TEMA</span>
-                <button class="btn-toggle" onclick="toggleTheme()" id="theme-val">NEON</button> 
-            </div>
-
-            <div class="setting-item"> 
-                <span id="txt-vib-label">VIBRACIÓN</span>
-                <button class="btn-toggle active" onclick="toggleVib()" id="vib-val">ON</button> 
-            </div>
-
-            <button class="btn-main" onclick="saveGame()" id="txt-save-btn" style="background: linear-gradient(135deg, #00ff88, #00d970); margin-bottom: 10px;">💾 GUARDAR</button>
-            <button class="btn-main" onclick="closeSettings()" id="txt-close">CERRAR</button>
-        </div>
+        <h2 style="margin:0; color:var(--p)">AJUSTES</h2>
+        <button class="btn-main" onclick="closeSettings()" style="margin-top:20px">CERRAR</button>
     </div>
 
     <!-- EXIT MODAL -->
@@ -605,9 +381,94 @@
     <div class="selection-preview" id="selection-preview">...</div>
     <div class="knowledge-banner" id="knowledge-text">Preparando sabiduría...</div>
     <div id="game-board"></div>
-    <div id="word-bank" style="display: flex;"></div>
+    <div id="word-bank"></div>
 
     <!-- BUTTONS -->
     <div style="display:flex; gap:15px; margin-top:auto; padding-bottom:20px; flex-wrap: wrap; justify-content: center;">
         <button class="btn-main" onclick="triggerAIHint()" id="txt-hint-btn" style="font-size: 0.8rem;">🤖 PISTA</button>
-        <button class="btn-main" onclick="clearSelecti
+        <button class="btn-main" onclick="clearSelection()" id="txt-clear-btn" style="background: var(--error); font-size: 0.8rem;">BORRAR</button>
+    </div>
+
+    <script>
+        // ===== SPLASH: always close after 2.5s (no matter what) =====
+        (function setupSplashFailsafe() {
+            const splash = document.getElementById('splash-screen');
+            const loadingText = document.getElementById('loading-text');
+
+            function hideSplashScreen() {
+                try {
+                    if (!splash) return;
+                    splash.classList.add('fade-out');
+                    // remove after transition
+                    setTimeout(() => {
+                        try { splash.remove(); } catch (e) {}
+                    }, 900);
+                } catch (e) {}
+            }
+
+            // unconditional failsafe
+            setTimeout(hideSplashScreen, 2500);
+
+            // helpful status if init crashes
+            window.addEventListener('error', () => {
+                if (loadingText) loadingText.textContent = 'Error al cargar. Entrando…';
+                setTimeout(hideSplashScreen, 800);
+                showStartModal();
+            });
+
+            window.addEventListener('unhandledrejection', () => {
+                if (loadingText) loadingText.textContent = 'Error al cargar. Entrando…';
+                setTimeout(hideSplashScreen, 800);
+                showStartModal();
+            });
+
+            function showStartModal() {
+                const m = document.getElementById('start-modal');
+                if (m) m.style.display = 'flex';
+            }
+
+            // minimal init: show start modal fast
+            window.addEventListener('load', () => {
+                try {
+                    showStartModal();
+                } catch (e) {
+                    showStartModal();
+                }
+            });
+        })();
+
+        // ===== Minimal placeholders so buttons don't throw =====
+        function startApp() {
+            const m = document.getElementById('start-modal');
+            if (m) m.style.display = 'none';
+            document.getElementById('knowledge-text').textContent = 'Listo. ¡A jugar!';
+        }
+
+        function openSettings() {
+            const m = document.getElementById('settings-modal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeSettings() {
+            const m = document.getElementById('settings-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        function toggleExit() {
+            const m = document.getElementById('exit-modal');
+            if (!m) return;
+            m.style.display = (m.style.display === 'none' || !m.style.display) ? 'flex' : 'none';
+        }
+
+        function exitGame() {
+            location.reload();
+        }
+
+        function triggerAIHint() {}
+        function clearSelection() {
+            const p = document.getElementById('selection-preview');
+            if (p) p.textContent = '...';
+        }
+    </script>
+</body>
+</html>
