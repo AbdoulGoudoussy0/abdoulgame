@@ -5,32 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Title</title>
     <link rel="stylesheet" href="styles.css">
-    <script>
-        window.addEventListener('error', function() {
-            const splashScreen = document.getElementById('splash-screen');
-            if (splashScreen) {
-                splashScreen.style.display = 'none';
-            }
-        });
-        window.addEventListener('unhandledrejection', function() {
-            const splashScreen = document.getElementById('splash-screen');
-            if (splashScreen) {
-                splashScreen.style.display = 'none';
-            }
-        });
-        setTimeout(function() {
-            const splashScreen = document.getElementById('splash-screen');
-            if (splashScreen) {
-                splashScreen.style.display = 'none';
-            }
-        }, 2500);
-    </script>
 </head>
 <body>
-    <div id="splash-screen">
-        <h1>Loading Game...</h1>
+    <div id="splash-screen"></div>
+    <div id="game-container">
+        <!-- Game contents go here -->
     </div>
-    <div id="game"></div>
-    <script src="game.js"></script>
+    <script>
+        function hideSplash() {
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('fade-out');
+            setTimeout(() => splash.remove(), 900);
+        }
+        window.addEventListener('error', hideSplash);
+        window.addEventListener('unhandledrejection', hideSplash);
+        setTimeout(hideSplash, 2500);
+    </script>
 </body>
 </html>
