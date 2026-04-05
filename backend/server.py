@@ -9,10 +9,11 @@ import logging
 import random
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import re
+import hashlib
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -312,6 +313,286 @@ CATEGORIES = [
     {"id": "justice", "ES": "Justicia", "EN": "Justice", "FR": "Justice"},
 ]
 
+# Inspirational quotes by category
+INSPIRATIONAL_QUOTES = {
+    "philosophy": {
+        "ES": [
+            "Como dijo Sócrates: Solo sé que no sé nada",
+            "La duda es el principio de la sabiduría - Aristóteles",
+            "Pienso, luego existo - René Descartes",
+            "El que no conoce su historia está condenado a repetirla",
+            "La verdad es hija del tiempo, no de la autoridad"
+        ],
+        "EN": [
+            "As Socrates said: I know that I know nothing",
+            "Doubt is the beginning of wisdom - Aristotle",
+            "I think, therefore I am - René Descartes",
+            "Those who don't know history are doomed to repeat it",
+            "Truth is the daughter of time, not of authority"
+        ],
+        "FR": [
+            "Comme disait Socrate: Je sais que je ne sais rien",
+            "Le doute est le début de la sagesse - Aristote",
+            "Je pense, donc je suis - René Descartes",
+            "Celui qui ne connaît pas son histoire est condamné à la répéter",
+            "La vérité est fille du temps, non de l'autorité"
+        ]
+    },
+    "values": {
+        "ES": [
+            "La integridad es hacer lo correcto, incluso cuando nadie mira",
+            "Tus valores definen quién eres realmente",
+            "El carácter es como un árbol y la reputación su sombra",
+            "Sé el cambio que quieres ver en el mundo - Gandhi",
+            "La honestidad es el primer capítulo del libro de la sabiduría"
+        ],
+        "EN": [
+            "Integrity is doing the right thing, even when no one is watching",
+            "Your values define who you really are",
+            "Character is like a tree and reputation its shadow",
+            "Be the change you wish to see in the world - Gandhi",
+            "Honesty is the first chapter in the book of wisdom"
+        ],
+        "FR": [
+            "L'intégrité c'est faire ce qui est juste, même quand personne ne regarde",
+            "Vos valeurs définissent qui vous êtes vraiment",
+            "Le caractère est comme un arbre et la réputation son ombre",
+            "Soyez le changement que vous voulez voir dans le monde - Gandhi",
+            "L'honnêteté est le premier chapitre du livre de la sagesse"
+        ]
+    },
+    "emotions": {
+        "ES": [
+            "Las emociones no son buenas ni malas, simplemente son",
+            "El amor todo lo puede, todo lo cree, todo lo espera",
+            "La alegría compartida se multiplica, el dolor compartido se divide",
+            "La paz interior comienza cuando decides no permitir que otros controlen tus emociones",
+            "La esperanza es el sueño del hombre despierto - Aristóteles"
+        ],
+        "EN": [
+            "Emotions are neither good nor bad, they simply are",
+            "Love can do all things, believe all things, hope all things",
+            "Shared joy is multiplied, shared pain is divided",
+            "Inner peace begins when you decide not to let others control your emotions",
+            "Hope is the dream of a man awake - Aristotle"
+        ],
+        "FR": [
+            "Les émotions ne sont ni bonnes ni mauvaises, elles sont simplement",
+            "L'amour peut tout, croit tout, espère tout",
+            "La joie partagée se multiplie, la douleur partagée se divise",
+            "La paix intérieure commence quand vous décidez de ne pas laisser les autres contrôler vos émotions",
+            "L'espoir est le rêve d'un homme éveillé - Aristote"
+        ]
+    },
+    "success": {
+        "ES": [
+            "El éxito es la suma de pequeños esfuerzos repetidos día tras día",
+            "No cuentes los días, haz que los días cuenten - Muhammad Ali",
+            "El fracaso es solo la oportunidad de comenzar de nuevo con más inteligencia",
+            "La disciplina es el puente entre metas y logros",
+            "Los sueños no funcionan a menos que tú lo hagas"
+        ],
+        "EN": [
+            "Success is the sum of small efforts repeated day after day",
+            "Don't count the days, make the days count - Muhammad Ali",
+            "Failure is only the opportunity to begin again more intelligently",
+            "Discipline is the bridge between goals and accomplishments",
+            "Dreams don't work unless you do"
+        ],
+        "FR": [
+            "Le succès est la somme de petits efforts répétés jour après jour",
+            "Ne comptez pas les jours, faites que les jours comptent - Muhammad Ali",
+            "L'échec n'est que l'opportunité de recommencer plus intelligemment",
+            "La discipline est le pont entre les objectifs et les accomplissements",
+            "Les rêves ne fonctionnent pas à moins que vous ne le fassiez"
+        ]
+    },
+    "strength": {
+        "ES": [
+            "Lo que no te mata te hace más fuerte - Nietzsche",
+            "La verdadera fuerza está en levantarse cada vez que caes",
+            "El coraje no es la ausencia de miedo, sino el triunfo sobre él",
+            "Las dificultades preparan a personas comunes para destinos extraordinarios",
+            "La resiliencia es aceptar tu nueva realidad, incluso si es menos buena que la anterior"
+        ],
+        "EN": [
+            "What doesn't kill you makes you stronger - Nietzsche",
+            "True strength is rising every time you fall",
+            "Courage is not the absence of fear, but the triumph over it",
+            "Difficulties prepare ordinary people for extraordinary destinies",
+            "Resilience is accepting your new reality, even if it's less good than before"
+        ],
+        "FR": [
+            "Ce qui ne te tue pas te rend plus fort - Nietzsche",
+            "La vraie force est de se relever chaque fois que tu tombes",
+            "Le courage n'est pas l'absence de peur, mais le triomphe sur elle",
+            "Les difficultés préparent des gens ordinaires pour des destins extraordinaires",
+            "La résilience c'est accepter votre nouvelle réalité, même si elle est moins bonne qu'avant"
+        ]
+    },
+    "relationships": {
+        "ES": [
+            "La familia no es algo importante, lo es todo - Michael J. Fox",
+            "Un amigo verdadero es quien te toma de la mano y te toca el corazón",
+            "Solos podemos hacer tan poco, juntos podemos hacer tanto - Helen Keller",
+            "Las relaciones son como el vidrio, a veces es mejor dejarlas rotas que lastimarse tratando de repararlas",
+            "La mejor forma de encontrar un amigo es ser uno"
+        ],
+        "EN": [
+            "Family is not something important, it's everything - Michael J. Fox",
+            "A true friend is someone who takes your hand and touches your heart",
+            "Alone we can do so little, together we can do so much - Helen Keller",
+            "Relationships are like glass, sometimes it's better to leave them broken than hurt yourself trying to fix them",
+            "The best way to find a friend is to be one"
+        ],
+        "FR": [
+            "La famille n'est pas quelque chose d'important, c'est tout - Michael J. Fox",
+            "Un vrai ami est quelqu'un qui prend votre main et touche votre cœur",
+            "Seuls nous pouvons faire si peu, ensemble nous pouvons faire tant - Helen Keller",
+            "Les relations sont comme le verre, parfois il vaut mieux les laisser cassées que se blesser en essayant de les réparer",
+            "La meilleure façon de trouver un ami est d'en être un"
+        ]
+    },
+    "learning": {
+        "ES": [
+            "La educación es el arma más poderosa para cambiar el mundo - Nelson Mandela",
+            "Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo",
+            "La curiosidad es la mecha en la vela del aprendizaje",
+            "Nunca es tarde para ser lo que podrías haber sido - George Eliot",
+            "Aprender es un tesoro que seguirá a su dueño a todas partes"
+        ],
+        "EN": [
+            "Education is the most powerful weapon to change the world - Nelson Mandela",
+            "Tell me and I forget, teach me and I remember, involve me and I learn",
+            "Curiosity is the wick in the candle of learning",
+            "It's never too late to be what you might have been - George Eliot",
+            "Learning is a treasure that will follow its owner everywhere"
+        ],
+        "FR": [
+            "L'éducation est l'arme la plus puissante pour changer le monde - Nelson Mandela",
+            "Dis-moi et j'oublie, enseigne-moi et je me souviens, implique-moi et j'apprends",
+            "La curiosité est la mèche dans la bougie de l'apprentissage",
+            "Il n'est jamais trop tard pour être ce que vous auriez pu être - George Eliot",
+            "L'apprentissage est un trésor qui suivra son propriétaire partout"
+        ]
+    },
+    "health": {
+        "ES": [
+            "La salud es riqueza real, no piezas de oro y plata - Gandhi",
+            "Cuida tu cuerpo, es el único lugar que tienes para vivir",
+            "Un cuerpo sano es una habitación para el alma, un cuerpo enfermo es una prisión",
+            "La mejor medicina es un ánimo alegre",
+            "El equilibrio es la clave de todo bienestar"
+        ],
+        "EN": [
+            "Health is real wealth, not pieces of gold and silver - Gandhi",
+            "Take care of your body, it's the only place you have to live",
+            "A healthy body is a room for the soul, a sick body is a prison",
+            "The best medicine is a cheerful spirit",
+            "Balance is the key to all wellbeing"
+        ],
+        "FR": [
+            "La santé est la vraie richesse, pas les pièces d'or et d'argent - Gandhi",
+            "Prenez soin de votre corps, c'est le seul endroit où vous devez vivre",
+            "Un corps sain est une chambre pour l'âme, un corps malade est une prison",
+            "Le meilleur médicament est un esprit joyeux",
+            "L'équilibre est la clé de tout bien-être"
+        ]
+    },
+    "nature": {
+        "ES": [
+            "En cada paseo por la naturaleza, uno recibe mucho más de lo que busca",
+            "La naturaleza no hace nada incompleto ni nada en vano - Aristóteles",
+            "Mira profundamente en la naturaleza y entenderás todo mejor - Einstein",
+            "El tiempo es la moneda de tu vida, gástala sabiamente",
+            "La vida es lo que pasa mientras estás ocupado haciendo otros planes"
+        ],
+        "EN": [
+            "In every walk with nature, one receives far more than he seeks",
+            "Nature does nothing incomplete and nothing in vain - Aristotle",
+            "Look deep into nature and you will understand everything better - Einstein",
+            "Time is the coin of your life, spend it wisely",
+            "Life is what happens while you're busy making other plans"
+        ],
+        "FR": [
+            "Dans chaque promenade avec la nature, on reçoit bien plus qu'on ne cherche",
+            "La nature ne fait rien d'incomplet et rien en vain - Aristote",
+            "Regardez profondément dans la nature et vous comprendrez tout mieux - Einstein",
+            "Le temps est la monnaie de votre vie, dépensez-le sagement",
+            "La vie est ce qui arrive pendant que vous êtes occupé à faire d'autres plans"
+        ]
+    },
+    "spirituality": {
+        "ES": [
+            "La gratitud convierte lo que tenemos en suficiente",
+            "La fe es dar el primer paso incluso cuando no ves toda la escalera - MLK",
+            "El alma que puede hablar con los ojos, también puede besar con la mirada",
+            "La espiritualidad es reconocer la luz que está en uno mismo",
+            "No busques, encuentra - Picasso"
+        ],
+        "EN": [
+            "Gratitude turns what we have into enough",
+            "Faith is taking the first step even when you don't see the whole staircase - MLK",
+            "The soul that can speak with the eyes can also kiss with the gaze",
+            "Spirituality is recognizing the light that is within oneself",
+            "Don't seek, find - Picasso"
+        ],
+        "FR": [
+            "La gratitude transforme ce que nous avons en suffisant",
+            "La foi c'est faire le premier pas même quand vous ne voyez pas tout l'escalier - MLK",
+            "L'âme qui peut parler avec les yeux peut aussi embrasser avec le regard",
+            "La spiritualité c'est reconnaître la lumière qui est en soi",
+            "Ne cherchez pas, trouvez - Picasso"
+        ]
+    },
+    "creativity": {
+        "ES": [
+            "La creatividad es la inteligencia divirtiéndose - Einstein",
+            "El arte lava del alma el polvo de la vida cotidiana - Picasso",
+            "Todo niño es un artista, el problema es seguir siendo artista al crecer",
+            "La belleza perece en la vida, pero es inmortal en el arte",
+            "La imaginación es más importante que el conocimiento - Einstein"
+        ],
+        "EN": [
+            "Creativity is intelligence having fun - Einstein",
+            "Art washes from the soul the dust of everyday life - Picasso",
+            "Every child is an artist, the problem is staying an artist when you grow up",
+            "Beauty perishes in life, but is immortal in art",
+            "Imagination is more important than knowledge - Einstein"
+        ],
+        "FR": [
+            "La créativité c'est l'intelligence qui s'amuse - Einstein",
+            "L'art lave de l'âme la poussière de la vie quotidienne - Picasso",
+            "Chaque enfant est un artiste, le problème est de rester artiste en grandissant",
+            "La beauté périt dans la vie, mais est immortelle dans l'art",
+            "L'imagination est plus importante que la connaissance - Einstein"
+        ]
+    },
+    "justice": {
+        "ES": [
+            "La injusticia en cualquier lugar es una amenaza a la justicia en todas partes - MLK",
+            "La libertad no es hacer lo que quieras, sino querer lo que haces",
+            "Todos los hombres nacen iguales, pero es la última vez que lo son",
+            "La justicia retardada es justicia denegada",
+            "No hay camino para la paz, la paz es el camino - Gandhi"
+        ],
+        "EN": [
+            "Injustice anywhere is a threat to justice everywhere - MLK",
+            "Freedom is not doing what you want, but wanting what you do",
+            "All men are born equal, but it's the last time they are",
+            "Justice delayed is justice denied",
+            "There is no path to peace, peace is the path - Gandhi"
+        ],
+        "FR": [
+            "L'injustice n'importe où est une menace pour la justice partout - MLK",
+            "La liberté n'est pas faire ce que vous voulez, mais vouloir ce que vous faites",
+            "Tous les hommes naissent égaux, mais c'est la dernière fois qu'ils le sont",
+            "La justice retardée est la justice refusée",
+            "Il n'y a pas de chemin vers la paix, la paix est le chemin - Gandhi"
+        ]
+    }
+}
+
 # Models
 class ScoreRecord(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -366,6 +647,120 @@ class ShareData(BaseModel):
     words_found: int
     language: str
 
+# Achievements definitions
+ACHIEVEMENTS = [
+    {
+        "id": "philosopher",
+        "icon": "🧠",
+        "nameES": "Filósofo",
+        "nameEN": "Philosopher",
+        "nameFR": "Philosophe",
+        "descES": "Encuentra 10 palabras de Filosofía",
+        "descEN": "Find 10 Philosophy words",
+        "descFR": "Trouvez 10 mots de Philosophie",
+        "requirement": {"type": "category_words", "category": "philosophy", "count": 10}
+    },
+    {
+        "id": "time_master",
+        "icon": "⏱️",
+        "nameES": "Maestro del Tiempo",
+        "nameEN": "Time Master",
+        "nameFR": "Maître du Temps",
+        "descES": "Completa un nivel con más de 2 minutos restantes",
+        "descEN": "Complete a level with more than 2 minutes remaining",
+        "descFR": "Complétez un niveau avec plus de 2 minutes restantes",
+        "requirement": {"type": "time_remaining", "seconds": 120}
+    },
+    {
+        "id": "polyglot",
+        "icon": "🌍",
+        "nameES": "Políglota",
+        "nameEN": "Polyglot",
+        "nameFR": "Polyglotte",
+        "descES": "Juega en los 3 idiomas (ES/EN/FR)",
+        "descEN": "Play in all 3 languages (ES/EN/FR)",
+        "descFR": "Jouez dans les 3 langues (ES/EN/FR)",
+        "requirement": {"type": "languages_played", "count": 3}
+    },
+    {
+        "id": "perfectionist",
+        "icon": "💯",
+        "nameES": "Perfeccionista",
+        "nameEN": "Perfectionist",
+        "nameFR": "Perfectionniste",
+        "descES": "Completa un nivel sin usar pistas",
+        "descEN": "Complete a level without using hints",
+        "descFR": "Complétez un niveau sans utiliser d'indices",
+        "requirement": {"type": "no_hints", "count": 1}
+    },
+    {
+        "id": "wisdom_seeker",
+        "icon": "✨",
+        "nameES": "Buscador de Sabiduría",
+        "nameEN": "Wisdom Seeker",
+        "nameFR": "Chercheur de Sagesse",
+        "descES": "Encuentra 50 palabras en total",
+        "descEN": "Find 50 words in total",
+        "descFR": "Trouvez 50 mots au total",
+        "requirement": {"type": "total_words", "count": 50}
+    },
+    {
+        "id": "speed_demon",
+        "icon": "⚡",
+        "nameES": "Demonio de la Velocidad",
+        "nameEN": "Speed Demon",
+        "nameFR": "Démon de Vitesse",
+        "descES": "Encuentra una palabra en menos de 5 segundos",
+        "descEN": "Find a word in less than 5 seconds",
+        "descFR": "Trouvez un mot en moins de 5 secondes",
+        "requirement": {"type": "word_speed", "seconds": 5}
+    },
+    {
+        "id": "champion",
+        "icon": "🏆",
+        "nameES": "Campeón",
+        "nameEN": "Champion",
+        "nameFR": "Champion",
+        "descES": "Completa el nivel 10",
+        "descEN": "Complete level 10",
+        "descFR": "Complétez le niveau 10",
+        "requirement": {"type": "level_completed", "level": 10}
+    },
+    {
+        "id": "combo_master",
+        "icon": "🔥",
+        "nameES": "Maestro del Combo",
+        "nameEN": "Combo Master",
+        "nameFR": "Maître du Combo",
+        "descES": "Encuentra 5 palabras seguidas sin errores",
+        "descEN": "Find 5 words in a row without errors",
+        "descFR": "Trouvez 5 mots d'affilée sans erreurs",
+        "requirement": {"type": "combo_streak", "count": 5}
+    },
+    {
+        "id": "heart_explorer",
+        "icon": "❤️",
+        "nameES": "Explorador del Corazón",
+        "nameEN": "Heart Explorer",
+        "nameFR": "Explorateur du Cœur",
+        "descES": "Encuentra 10 palabras de Emociones",
+        "descEN": "Find 10 Emotions words",
+        "descFR": "Trouvez 10 mots d'Émotions",
+        "requirement": {"type": "category_words", "category": "emotions", "count": 10}
+    },
+    {
+        "id": "all_rounder",
+        "icon": "🌟",
+        "nameES": "Todoterreno",
+        "nameEN": "All-Rounder",
+        "nameFR": "Touche-à-tout",
+        "descES": "Encuentra palabras de todas las 12 categorías",
+        "descEN": "Find words from all 12 categories",
+        "descFR": "Trouvez des mots de toutes les 12 catégories",
+        "requirement": {"type": "all_categories", "count": 12}
+    }
+]
+
 # Helper functions
 def can_place_word(matrix, word, row, col, direction, size):
     dr, dc = direction
@@ -405,13 +800,37 @@ def get_level_config(level: int):
     return configs.get(level, configs[10])
 
 def generate_board(size: int, words: List[dict], language: str, level: int) -> GameBoard:
+    """
+    Improved word placement algorithm with length filtering
+    - Filters words by appropriate length for grid size
+    - Increased placement attempts for better success rate
+    - Prioritizes shorter words for smaller grids
+    """
     directions = [(0, 1), (1, 0), (1, 1), (1, -1), (0, -1), (-1, 0), (-1, -1), (-1, 1)]
     word_placements = []
     config = get_level_config(level)
     
+    # Filter words by length based on grid size
+    max_word_length = max(4, size - 2)  # At least 4 letters, max grid_size - 2
+    filtered_words = []
+    
+    for word_data in words:
+        word_text = word_data[language]
+        word_len = len(word_text)
+        # Accept words that fit well in the grid
+        if 3 <= word_len <= max_word_length:
+            filtered_words.append(word_data)
+    
+    # If filtering removed too many words, use original list
+    if len(filtered_words) < len(words) * 0.5:
+        filtered_words = words
+    
+    # Sort by length to place shorter words first (easier to place)
+    filtered_words.sort(key=lambda w: len(w[language]))
+    
     placed = False
     attempts = 0
-    max_attempts = 100
+    max_attempts = 150  # Increased from 100
     
     while not placed and attempts < max_attempts:
         attempts += 1
@@ -419,14 +838,15 @@ def generate_board(size: int, words: List[dict], language: str, level: int) -> G
         placed = True
         word_placements = []
         
-        for word_data in words:
+        for word_data in filtered_words:
             word = word_data[language]
             info = word_data.get(f"info{language}", "")
             category = word_data.get("category", "general")
             categoryName = word_data.get(f"category{language}", category)
             word_placed = False
             
-            for _ in range(200):
+            # Increased attempts per word from 200 to 500
+            for _ in range(500):
                 direction = random.choice(directions)
                 row = random.randint(0, size - 1)
                 col = random.randint(0, size - 1)
@@ -444,6 +864,7 @@ def generate_board(size: int, words: List[dict], language: str, level: int) -> G
                 placed = False
                 break
     
+    # Fill empty cells with random letters
     for r in range(size):
         for c in range(size):
             if not matrix[r][c]:
@@ -635,6 +1056,78 @@ async def get_player_scores(player_name: str, limit: int = 20, skip: int = 0):
         if isinstance(score['timestamp'], str):
             score['timestamp'] = datetime.fromisoformat(score['timestamp'])
     return scores
+
+# NEW ENDPOINTS - Achievements & Daily Challenge
+@api_router.get("/achievements")
+async def get_achievements(language: str = "ES"):
+    """Get all available achievements"""
+    lang = language.upper() if language.upper() in ["ES", "EN", "FR"] else "ES"
+    achievements_localized = []
+    
+    for achievement in ACHIEVEMENTS:
+        achievements_localized.append({
+            "id": achievement["id"],
+            "icon": achievement["icon"],
+            "name": achievement[f"name{lang}"],
+            "description": achievement[f"desc{lang}"],
+            "requirement": achievement["requirement"]
+        })
+    
+    return achievements_localized
+
+@api_router.get("/inspirational-quote")
+async def get_inspirational_quote(category: str, language: str = "ES"):
+    """Get a random inspirational quote for a category"""
+    lang = language.upper() if language.upper() in ["ES", "EN", "FR"] else "ES"
+    
+    if category in INSPIRATIONAL_QUOTES:
+        quotes = INSPIRATIONAL_QUOTES[category][lang]
+        return {"quote": random.choice(quotes), "category": category}
+    
+    # Fallback
+    return {"quote": "¡Sigue aprendiendo!", "category": category}
+
+@api_router.get("/daily-challenge")
+async def get_daily_challenge(language: str = "ES"):
+    """
+    Generate daily challenge - same board for everyone each day
+    Uses date as seed for reproducible randomization
+    """
+    lang = language.upper() if language.upper() in ["ES", "EN", "FR"] else "ES"
+    
+    # Get today's date as seed
+    today = date.today()
+    seed_string = f"{today.isoformat()}"
+    seed_value = int(hashlib.md5(seed_string.encode()).hexdigest(), 16) % (10 ** 8)
+    
+    # Set random seed for reproducible generation
+    random.seed(seed_value)
+    
+    # Daily challenge is always level 5 (medium difficulty)
+    level = 5
+    config = get_level_config(level)
+    size = config["size"]
+    num_words = config["words"]
+    
+    # Select words based on seeded random
+    selected_words = random.sample(KNOWLEDGE_DB, min(num_words, len(KNOWLEDGE_DB)))
+    
+    # Generate board with seeded random
+    board = generate_board(size, selected_words, lang, level)
+    
+    # Reset random seed
+    random.seed()
+    
+    return {
+        "date": today.isoformat(),
+        "level": level,
+        "board": board,
+        "message": {
+            "ES": "¡Desafío del día! Todos juegan el mismo tablero hoy.",
+            "EN": "Daily Challenge! Everyone plays the same board today.",
+            "FR": "Défi du jour! Tout le monde joue le même plateau aujourd'hui."
+        }[lang]
+    }
 
 app.include_router(api_router)
 

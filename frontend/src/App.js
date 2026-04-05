@@ -5,9 +5,27 @@ import {
   Settings, X, Volume2, VolumeX, RotateCcw, Play, 
   Share2, ChevronUp, ChevronDown, Sparkles, Zap, Globe, Palette,
   Smartphone, HelpCircle, Hand, Target, Check, Sun, Moon, BookOpen,
-  Heart, Brain, Users, Leaf, Star, Shield
+  Heart, Brain, Users, Leaf, Star, Shield, TrendingUp, Award, Calendar,
+  BarChart3, Download
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import {
+  initializePlayerStats,
+  getPlayerStats,
+  updatePlayerStats,
+  recordWord,
+  recordGameCompletion,
+  updateStreak,
+  checkAchievements,
+  exportStatsAsImage
+} from "./utils/achievements";
+import {
+  createCategoryParticles,
+  createWordRevealEffect,
+  createComboEffect,
+  createLevelUpEffect,
+  createAchievementToast
+} from "./utils/particles";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -226,6 +244,22 @@ function App() {
   const [volume, setVolume] = useState(0.5);
   const [vibration, setVibration] = useState(true);
   const [muted, setMuted] = useState(false);
+
+  // NEW STATES - Advanced Features
+  const [playerStats, setPlayerStats] = useState(initializePlayerStats());
+  const [achievements, setAchievements] = useState([]);
+  const [showStats, setShowStats] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [gameMode, setGameMode] = useState("normal"); // normal, practice, daily, zen
+  const [practiceCategory, setPracticeCategory] = useState("all");
+  const [categories, setCategories] = useState([]);
+  const [comboCount, setComboCount] = useState(0);
+  const [lastWordTime, setLastWordTime] = useState(null);
+  const [hintsUsedThisGame, setHintsUsedThisGame] = useState(0);
+  const [inspirationalQuote, setInspirationalQuote] = useState("");
+  const [showModeSelector, setShowModeSelector] = useState(false);
 
   // UI state
   const [orientation, setOrientation] = useState("portrait");

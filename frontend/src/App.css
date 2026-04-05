@@ -704,3 +704,103 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ===== NEW STYLES - Stats & Achievements ===== */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.achievement-unlocked {
+  animation: achievement-pulse 0.6s ease;
+}
+
+.achievement-locked {
+  filter: grayscale(0.8);
+}
+
+@keyframes achievement-pulse {
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Combo display */
+.combo-display {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--warning);
+  text-shadow: 0 0 30px var(--warning);
+  z-index: 999;
+  pointer-events: none;
+  animation: combo-appear 0.5s ease-out;
+}
+
+@keyframes combo-appear {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* XP Bar */
+.xp-bar {
+  height: 6px;
+  background: var(--bg-surface);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+  transition: width 0.6s ease;
+  box-shadow: 0 0 10px var(--accent-primary);
+}
+
+/* Tutorial overlay */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in 0.3s ease;
+}
+
+.tutorial-spotlight {
+  position: absolute;
+  border: 3px solid var(--accent-primary);
+  border-radius: 1rem;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-primary);
+  animation: spotlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-primary); }
+  50% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 50px var(--accent-primary); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
