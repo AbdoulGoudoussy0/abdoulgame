@@ -1,0 +1,153 @@
+{
+  "project_name": "AbdoulGame Ultimate Polyglot",
+  "theme_and_archetype": {
+    "theme": "DARK",
+    "archetype": "Archetype 7 (Electric & Neon) merged with Archetype 2 (Performance Pro)",
+    "rationale": "The game demands a high-energy, adrenaline-pumping vibe resembling a night football match under floodlights. We elevate the user's requested 'Neon futuristic' theme by grounding it in a deep, textured void (stadium at night) rather than flat gradients. This ensures the neon cyan, purple, and magenta punch through with maximum contrast, while glassmorphism layers provide a premium, tactical 'playbook' feel."
+  },
+  "colors": {
+    "background": {
+      "base": "#030305",
+      "surface": "#0A0A0F",
+      "glass": "bg-black/40 backdrop-blur-2xl"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "accent": "#00F2FF"
+    },
+    "themes": {
+      "Neon": {
+        "primary": "#00F2FF",
+        "secondary": "#7000FF",
+        "accent": "#FF00C8",
+        "glow": "drop-shadow-[0_0_12px_rgba(0,242,255,0.6)]"
+      },
+      "Classic": {
+        "primary": "#CCFF00",
+        "secondary": "#FFFFFF",
+        "accent": "#39FF14",
+        "glow": "drop-shadow-[0_0_12px_rgba(204,255,0,0.4)]"
+      },
+      "Gold": {
+        "primary": "#FFD700",
+        "secondary": "#FFA500",
+        "accent": "#FFFFFF",
+        "glow": "drop-shadow-[0_0_12px_rgba(255,215,0,0.6)]"
+      }
+    },
+    "utility": {
+      "success": "#39FF14",
+      "warning": "#FFEA00",
+      "error": "#FF003C"
+    }
+  },
+  "typography": {
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');"
+    ],
+    "font_families": {
+      "heading": "'Unbounded', sans-serif",
+      "body": "'JetBrains Mono', monospace",
+      "grid": "'JetBrains Mono', monospace"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-black tracking-tighter uppercase",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-bold",
+      "stats": "text-2xl sm:text-4xl font-black tracking-tight",
+      "body": "text-sm sm:text-base font-normal tracking-wide",
+      "grid_letter": "text-2xl sm:text-3xl font-bold uppercase"
+    },
+    "rules": {
+      "no_inter_for_headings": true,
+      "uppercase_labels": "Overlines and small labels MUST be uppercase with wide tracking (tracking-[0.2em])."
+    }
+  },
+  "surfaces_and_materials": {
+    "glassmorphism": {
+      "usage": "Settings Modal, Win Celebration, Floating Nav/Scoreboard",
+      "classes": "bg-black/60 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-2xl"
+    },
+    "game_grid": {
+      "usage": "The main word search playable area",
+      "classes": "bg-[#0A0A0F]/80 backdrop-blur-md border border-white/5 rounded-xl overflow-hidden shadow-2xl"
+    },
+    "grid_cells": {
+      "default": "text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-200 cursor-pointer rounded-md",
+      "selected": "bg-theme-primary text-black font-black scale-105 shadow-[0_0_12px_var(--theme-primary-glow)] transition-all duration-200",
+      "found": "bg-white/20 text-theme-primary font-bold opacity-80"
+    }
+  },
+  "spacing_and_layout": {
+    "container": "max-w-md mx-auto w-full px-4 sm:px-6 h-screen flex flex-col justify-between py-6",
+    "bento_grid": {
+      "usage": "Settings panel and end-game stats",
+      "classes": "grid grid-cols-2 gap-4",
+      "items": "bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center"
+    },
+    "generous_padding": "Use p-6 or p-8 inside modals to prevent text collision and maintain a premium feel."
+  },
+  "components": {
+    "Header": {
+      "layout": "Flex container bridging Timer (Left) and Score (Right).",
+      "timer": "Monospaced, massive font. Pulses red when under 30 seconds.",
+      "score": "Neon colored, monospaced."
+    },
+    "Word_Search_Grid": {
+      "layout": "CSS Grid, 1:1 aspect ratio. Max width 100%.",
+      "interaction": "Touch/swipe to select words. Must implement a visual line or pill-shaped highlight connecting start and end letters."
+    },
+    "Knowledge_Banner": {
+      "layout": "Fixed near the bottom, just above controls.",
+      "style": "Glassmorphism pill (rounded-full). Appears dynamically when a word is found.",
+      "typography": "text-sm italic text-white/90"
+    },
+    "Controls": {
+      "layout": "Bottom fixed bar with icon buttons.",
+      "buttons": "Settings, Hint, Theme Switcher, Language.",
+      "style": "Circular, glassmorphism buttons with 1px border. Hover/Active states scale down slightly (active:scale-95)."
+    },
+    "Progress_Bar": {
+      "layout": "Thin horizontal bar spanning the top or bottom of the screen.",
+      "style": "h-2 bg-white/10 rounded-full overflow-hidden",
+      "fill": "h-full bg-theme-primary shadow-[0_0_10px_var(--theme-primary)] transition-all duration-500"
+    }
+  },
+  "motion_and_interaction": {
+    "hover_states": "All buttons MUST have hover:bg-white/10 and scale transforms.",
+    "active_states": "active:scale-95 for tactile mobile feel.",
+    "page_transitions": "Framer motion fade in and slide up for modals.",
+    "win_celebration": "Trigger confetti canvas overlay. Modal drops in with elastic bounce.",
+    "timer_pulse": "CSS keyframe pulse animation on the timer when time < 10s."
+  },
+  "media": {
+    "background_image": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/ce42bd3d-1e24-4f1c-a96b-aa9453dd1466/images/23855e63fb470783e9c6782789c2475fb72af4df0e0a7a5e68b614a1db5d8f88.png",
+      "description": "Abstract dark football stadium at night under heavy floodlights. Use as a fixed, cover-sized background with a dark overlay (bg-black/40) so the grid remains legible.",
+      "usage": "Global Page Background"
+    },
+    "win_trophy_image": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/ce42bd3d-1e24-4f1c-a96b-aa9453dd1466/images/b7ec88058f6553222083ce9031d5058210508bbfd784ae36d72bc0b5ea8c2333.png",
+      "description": "Golden trophy cup with glowing particles and neon light trails. Display inside the Win Celebration Modal.",
+      "usage": "Win/Success Modal"
+    }
+  },
+  "testing_attributes": {
+    "rules": "All interactive elements MUST include data-testid. Format: kebab-case, role-based.",
+    "examples": [
+      "data-testid='timer-display'",
+      "data-testid='score-display'",
+      "data-testid='grid-cell-[x]-[y]'",
+      "data-testid='settings-button'",
+      "data-testid='hint-button'"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Ensure the application is wrapped in a relative container with max-width 100vw and h-screen to prevent scrolling on mobile devices (except within modals).",
+    "Use Phosphor Icons (@phosphor-icons/react) with duotone weight for the UI controls.",
+    "Implement the background image globally with `bg-cover bg-center bg-no-repeat bg-fixed`.",
+    "For the theme switcher, use CSS variables for --theme-primary, --theme-secondary, etc., injected dynamically into the document root.",
+    "Use standard HTML/Tailwind for the unique game layout, but you may use Radix UI or Shadcn for the Settings Dialog to ensure accessibility."
+  ]
+}
