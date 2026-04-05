@@ -661,7 +661,7 @@
         },
         {
             id: 'wisdom',
-            ES: 'SABIDURIA', EN: 'WISDOM', FR: 'SAGESSE',
+            ES: 'SABIDURÍA', EN: 'WISDOM', FR: 'SAGESSE',
             infoES: 'La sabiduría es el fruto de la experiencia.',
             infoEN: 'Wisdom is the fruit of experience.',
             infoFR: 'La sagesse est le fruit de l\'expérience.'
@@ -726,7 +726,7 @@
         if (!el) return;
         el.volume = config.volume;
         el.currentTime = 0;
-        el.play().catch(() => {});
+        el.play().catch((err) => console.debug('Audio playback blocked:', err));
     }
 
     function updateAudio() {
@@ -1115,10 +1115,6 @@
             resetCombo();
             playSound('snd-goal');
             confetti({ particleCount: 160, spread: 90, origin: { y: 0.5 } });
-            if (config.score > config.highScore) {
-                config.highScore = config.score;
-                localStorage.setItem('abdoulgame_highscore', config.highScore);
-            }
             updateScoreUI();
             setTimeout(showWinModal, 500);
         }
@@ -1224,7 +1220,7 @@
         const bg = document.getElementById('bg-stadium');
         if (bg) {
             bg.volume = config.volume;
-            bg.play().catch(() => {});
+            bg.play().catch((err) => console.debug('Background audio blocked:', err));
         }
 
         loadLevel();
