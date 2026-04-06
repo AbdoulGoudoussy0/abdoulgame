@@ -33,6 +33,7 @@ import {
   playLevelUpSound,
   playAchievementSound
 } from "./utils/sounds";
+import { proceduralMusic } from "./utils/proceduralMusic";
 import {
   generateSmartHint,
   generateVisualHint
@@ -319,6 +320,10 @@ function App() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        // Initialize procedural music
+        proceduralMusic.init();
+        proceduralMusic.setVolume(0.12); // Muy sutil
+        
         // Load achievements
         const achievementsRes = await axios.get(`${API}/achievements?language=${lang}`);
         setAchievements(achievementsRes.data);
@@ -342,6 +347,25 @@ function App() {
 
     loadInitialData();
   }, [lang]);
+
+  // Música adaptativa según estado del juego
+  useEffect(() => {
+    if (!muted) {
+      if (gameState === "start") {
+        proceduralMusic.playAmbient();
+      } else if (gameState === "playing") {
+        if (timeLeft < 30 && timeLeft > 0) {
+          proceduralMusic.playTension();
+        } else if (timeLeft > 30) {
+          proceduralMusic.playGameplay();
+        }
+      } else if (gameState === "win") {
+        proceduralMusic.playVictory();
+      }
+    } else {
+      proceduralMusic.stopAll();
+    }
+  }, [gameState, timeLeft, muted]);
 
   // Check for level up
   useEffect(() => {
@@ -676,24 +700,30 @@ function App() {
       console.warn('Blur effect error:', e);
     }
     
-    // Generate smart contextual hint (texto)
-    const smartHint = generateSmartHint(pendingWord.word, [], pendingWord.category, lang);
-    setKnowledgeText(smartHint);
+    // Pista MEJORADA - Muestra más información
+    const wordLength = pendingWord.word.length;
+    const firstLetter = pendingWord.word[0];
+    const lastLetter = pendingWord.word[wordLength - 1];
+    const categoryName = pendingWord.categoryName;
     
-    // Resaltar primeras 2-3 letras de la palabra en el tablero
-    const numCellsToShow = Math.min(3, Math.ceil(pendingWord.word.length / 3));
-    setHintCells(pendingWord.coords.slice(0, numCellsToShow).map((c) => `${c.r}-${c.c}`));
+    // Mensaje completo y útil
+    const hintMessages = {
+      ES: `💡 Pista: Palabra de ${wordLength} letras sobre "${categoryName}". Empieza con "${firstLetter}" y termina con "${lastLetter}". ¡Búscala en todas direcciones!`,
+      EN: `💡 Hint: ${wordLength}-letter word about "${categoryName}". Starts with "${firstLetter}" and ends with "${lastLetter}". Look in all directions!`,
+      FR: `💡 Indice: Mot de ${wordLength} lettres sur "${categoryName}". Commence par "${firstLetter}" et finit par "${lastLetter}". Cherchez dans toutes les directions!`
+    };
     
-    // Visual hint - show general region after 3 seconds
-    setTimeout(() => {
-      const visualHint = generateVisualHint(pendingWord.coords, matrix.length);
-      setKnowledgeText(visualHint.message[lang] || visualHint.message.ES);
-    }, 3000);
+    setKnowledgeText(hintMessages[lang] || hintMessages.ES);
+    
+    // Resaltar SOLO primera y última letra (muy sutil)
+    const firstCoord = pendingWord.coords[0];
+    const lastCoord = pendingWord.coords[wordLength - 1];
+    setHintCells([`${firstCoord.r}-${firstCoord.c}`, `${lastCoord.r}-${lastCoord.c}`]);
     
     setAiLoading(false);
     
-    // Clear hint cells after 5 seconds
-    setTimeout(() => setHintCells([]), 5000);
+    // Clear hint cells after 4 seconds
+    setTimeout(() => setHintCells([]), 4000);
     
     // Reset combo on hint use
     setComboCount(0);
