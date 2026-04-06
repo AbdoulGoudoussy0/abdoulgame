@@ -26,6 +26,36 @@ import {
   createLevelUpEffect,
   createAchievementToast
 } from "./utils/particles";
+import {
+  playCategorySound,
+  playErrorSound,
+  playComboSound,
+  playLevelUpSound,
+  playAchievementSound
+} from "./utils/sounds";
+import {
+  generateSmartHint,
+  generateVisualHint
+} from "./utils/smartHints";
+import {
+  fireCategoryConfetti,
+  flashScreen,
+  wordRevealWave,
+  showFloatingText,
+  shakeElement
+} from "./utils/visualFeedback";
+import {
+  SelectionHistory,
+  predictWord,
+  calculateScoreMultiplier,
+  getMotivationalMessage,
+  isFirstTimePlayer,
+  markAsPlayed,
+  PerformanceTracker
+} from "./utils/gameHelpers";
+import StatsModal from "./components/StatsModal";
+import AchievementsModal from "./components/AchievementsModal";
+import GameModeSelector from "./components/GameModeSelector";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -279,6 +309,50 @@ function App() {
   const [inspirationalQuote, setInspirationalQuote] = useState("");
   const [showModeSelector, setShowModeSelector] = useState(false);
 
+  // Refs for advanced features
+  const selectionHistoryRef = useRef(new SelectionHistory(10));
+  const performanceTrackerRef = useRef(new PerformanceTracker());
+  const gridRef = useRef(null);
+
+  // Load achievements and categories on mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Load achievements
+        const achievementsRes = await axios.get(`${API}/achievements?language=${lang}`);
+        setAchievements(achievementsRes.data);
+
+        // Load categories
+        const categoriesRes = await axios.get(`${API}/categories?language=${lang}`);
+        setCategories(categoriesRes.data);
+
+        // Load player stats
+        const stats = getPlayerStats();
+        setPlayerStats(stats);
+
+        // Check if first time player
+        if (isFirstTimePlayer()) {
+          setShowTutorial(true);
+        }
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+      }
+    };
+
+    loadInitialData();
+  }, [lang]);
+
+  // Check for level up
+  useEffect(() => {
+    const currentLevel = Math.floor(playerStats.totalXP / 1000) + 1;
+    if (currentLevel > playerStats.level && gameState === "playing") {
+      createLevelUpEffect(currentLevel);
+      playLevelUpSound(muted);
+      const updatedStats = updatePlayerStats({ level: currentLevel });
+      setPlayerStats(updatedStats);
+    }
+  }, [playerStats.totalXP, gameState, muted]);
+
   // UI state
   const [orientation, setOrientation] = useState("portrait");
   const [deviceType, setDeviceType] = useState("mobile");
@@ -366,11 +440,42 @@ function App() {
       setGameState("win");
       if (!muted) playWinSound();
       triggerConfetti();
+      
+      // Record game completion
+      const updatedStats = recordGameCompletion(
+        level,
+        score,
+        foundWords.length,
+        hintsUsedThisGame,
+        timeLeft,
+        lang
+      );
+      setPlayerStats(updatedStats);
+      
+      // Check for new achievements
+      const newAchievements = checkAchievements(updatedStats, achievements);
+      if (newAchievements.length > 0) {
+        newAchievements.forEach((achievement, index) => {
+          setTimeout(() => {
+            createAchievementToast(achievement);
+            playAchievementSound(muted);
+          }, index * 600);
+        });
+      }
+      
+      // Mark as played
+      markAsPlayed();
+      
       if (level >= maxUnlockedLevel) {
         setMaxUnlockedLevel(Math.min(level + 1, 10));
       }
+      
+      // Reset combo and hints
+      setComboCount(0);
+      setHintsUsedThisGame(0);
+      performanceTrackerRef.current.reset();
     }
-  }, [foundWords, words, gameState, level, maxUnlockedLevel, muted]);
+  }, [foundWords, words, gameState, level, score, timeLeft, lang, hintsUsedThisGame, maxUnlockedLevel, muted, achievements]);
 
   const triggerConfetti = () => {
     const end = Date.now() + 2500;
@@ -430,22 +535,83 @@ function App() {
     const foundWord = words.find((w) => (w.word === selectedWord || w.word === reversedWord) && !foundWords.some((fw) => fw.word === w.word));
 
     if (foundWord) {
+      // Stop performance tracking
+      const wordTime = performanceTrackerRef.current.endWord();
+      
+      // Update found words and score
       setFoundWords((prev) => [...prev, foundWord]);
       setSelection([]);
-      setScore((prev) => prev + 200);
+      
+      // Calculate multiplier
+      const multiplier = calculateScoreMultiplier(timeLeft, timeLimit, comboCount, hintsUsedThisGame);
+      const baseScore = 200;
+      const finalScore = Math.round(baseScore * multiplier);
+      setScore((prev) => prev + finalScore);
       setScoreAnimating(true);
       setTimeout(() => setScoreAnimating(false), 400);
-      if (!muted) playCorrectSound();
+      
+      // Update combo
+      const newCombo = comboCount + 1;
+      setComboCount(newCombo);
+      updateStreak(true);
+      
+      // Play category sound
+      playCategorySound(foundWord.category, muted);
+      
+      // Vibration feedback
       if (vibration && navigator.vibrate) navigator.vibrate([40, 20, 40]);
 
+      // Visual effects
+      const cells = currentSelection.map(s => document.querySelector(`[data-cell="${s.r}-${s.c}"]`));
+      wordRevealWave(cells, foundWord.category);
+      createCategoryParticles(foundWord.category, window.innerWidth / 2, window.innerHeight / 2);
+      fireCategoryConfetti(foundWord.category);
+      flashScreen('#22C55E', 150);
+      
+      // Show score multiplier if > 1
+      if (multiplier > 1) {
+        showFloatingText(`+${finalScore} (${multiplier}x)`, window.innerWidth / 2, window.innerHeight / 3, '#F59E0B');
+      }
+      
+      // Combo effect
+      if (newCombo >= 3) {
+        createComboEffect(newCombo, window.innerWidth / 2, window.innerHeight / 2);
+        playComboSound(newCombo, muted);
+      }
+
+      // Record word in stats
+      const updatedStats = recordWord(foundWord.category, lang, wordTime);
+      setPlayerStats(updatedStats);
+      
+      // Check achievements
+      const newAchievements = checkAchievements(updatedStats, achievements);
+      if (newAchievements.length > 0) {
+        newAchievements.forEach((achievement, index) => {
+          setTimeout(() => {
+            createAchievementToast(achievement);
+            playAchievementSound(muted);
+          }, index * 500);
+        });
+      }
+
+      // Get inspirational quote
       try {
-        const response = await axios.post(`${API}/ai/wisdom`, null, { params: { word: foundWord.word, language: lang } });
-        setKnowledgeText("💡 " + response.data.wisdom);
-        setCurrentCategory(response.data.category || foundWord.categoryName);
+        const quoteRes = await axios.get(`${API}/inspirational-quote`, {
+          params: { category: foundWord.category, language: lang }
+        });
+        setInspirationalQuote(quoteRes.data.quote);
+        setKnowledgeText("✨ " + quoteRes.data.quote);
+        setCurrentCategory(foundWord.categoryName);
       } catch {
         setKnowledgeText("💡 " + foundWord.info);
         setCurrentCategory(foundWord.categoryName);
       }
+
+      // Clear hint cells
+      setHintCells([]);
+      
+      // Start tracking next word
+      performanceTrackerRef.current.startWord();
     }
   };
 
@@ -455,17 +621,30 @@ function App() {
     if (score < 100 || aiLoading) return;
     const pendingWord = words.find((w) => !foundWords.some((fw) => fw.word === w.word));
     if (!pendingWord) return;
+    
     setScore((prev) => prev - 100);
+    setHintsUsedThisGame((prev) => prev + 1);
     setAiLoading(true);
-    setHintCells(pendingWord.coords.map((c) => `${c.r}-${c.c}`));
-    try {
-      const response = await axios.post(`${API}/ai/hint`, { word: pendingWord.word, language: lang, found_letters: [] });
-      setKnowledgeText("🔍 " + response.data.hint);
-    } catch {
-      setKnowledgeText("🔍 Busca en todas las direcciones...");
-    }
+    
+    // Generate smart contextual hint
+    const smartHint = generateSmartHint(pendingWord.word, [], pendingWord.category, lang);
+    setKnowledgeText(smartHint);
+    
+    // Visual hint - show general region
+    const visualHint = generateVisualHint(pendingWord.coords, matrix.length);
+    setTimeout(() => {
+      setKnowledgeText(visualHint.message[lang] || visualHint.message.ES);
+    }, 2000);
+    
+    // Subtle hint cells (don't give exact position)
+    setHintCells(pendingWord.coords.slice(0, 2).map((c) => `${c.r}-${c.c}`));
     setAiLoading(false);
-    setTimeout(() => setHintCells([]), 3000);
+    
+    // Reset combo on hint use
+    setComboCount(0);
+    updateStreak(false);
+    
+    setTimeout(() => setHintCells([]), 4000);
   };
 
   const handleShare = async () => {
@@ -504,7 +683,9 @@ function App() {
         return (
           <div key={key} className={`grid-cell ${isSelected ? "selected" : ""} ${isFound ? "found" : ""} ${isHint ? "hint" : ""}`}
             onPointerDown={(e) => handleCellPointerDown(r, c, e)} onPointerEnter={() => handleCellPointerEnter(r, c)}
-            style={{ animationDelay: `${(r * matrix.length + c) * 10}ms` }} data-testid={`grid-cell-${r}-${c}`}>
+            style={{ animationDelay: `${(r * matrix.length + c) * 10}ms` }} 
+            data-testid={`grid-cell-${r}-${c}`}
+            data-cell={`${r}-${c}`}>
             {cell}
           </div>
         );
@@ -556,10 +737,64 @@ function App() {
   const displayModeIcon = displayMode === "auto" ? (isDarkMode ? <Moon size={18} /> : <Sun size={18} />) : displayMode === "dark" ? <Moon size={18} /> : <Sun size={18} />;
   const displayModeText = displayMode === "auto" ? t.autoMode : displayMode === "dark" ? t.darkMode : t.lightMode;
 
+  // Game mode handlers
+  const handleSelectGameMode = async (mode, category) => {
+    setGameMode(mode);
+    setPracticeCategory(category || "all");
+    setShowModeSelector(false);
+    
+    if (mode === "daily") {
+      // Load daily challenge
+      try {
+        const response = await axios.get(`${API}/daily-challenge?language=${lang}`);
+        setMatrix(response.data.board.matrix);
+        setWords(response.data.board.words);
+        setTimeLimit(response.data.board.time_limit);
+        setTimeLeft(response.data.board.time_limit);
+        setFoundWords([]);
+        setSelection([]);
+        setLevel(response.data.level);
+        setGameState("playing");
+      } catch (error) {
+        console.error("Error loading daily challenge:", error);
+      }
+    } else {
+      // Normal, practice, or zen mode
+      loadGame(level);
+    }
+  };
+
   return (
     <div className={`theme-${theme} relative w-full h-screen flex flex-col overflow-hidden`}
       style={{ backgroundColor: "var(--bg-primary)", backgroundImage: isDarkMode ? `radial-gradient(ellipse at top, color-mix(in srgb, var(--accent-secondary) 8%, transparent), transparent)` : "none" }}
       onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+
+      {/* Modals */}
+      {showStats && (
+        <StatsModal 
+          stats={playerStats}
+          lang={lang}
+          onClose={() => setShowStats(false)}
+        />
+      )}
+      
+      {showAchievements && (
+        <AchievementsModal
+          achievements={achievements}
+          unlockedIds={playerStats.unlockedAchievements}
+          lang={lang}
+          onClose={() => setShowAchievements(false)}
+        />
+      )}
+      
+      {showModeSelector && (
+        <GameModeSelector
+          lang={lang}
+          categories={categories}
+          onSelectMode={handleSelectGameMode}
+          onClose={() => setShowModeSelector(false)}
+        />
+      )}
 
       {/* Progress Bar */}
       {gameState === "playing" && (
@@ -585,12 +820,33 @@ function App() {
             </div>
 
             <button className="btn-game btn-primary text-base md:text-lg px-8 md:px-10 py-4 mb-4" onClick={startGame} data-testid="start-button"><Play size={22} />{t.enterStadium}</button>
+            <button className="btn-game btn-secondary mb-4" onClick={() => setShowModeSelector(true)} data-testid="mode-selector-button"><Target size={18} />{lang === 'ES' ? 'Modos de Juego' : lang === 'EN' ? 'Game Modes' : 'Modes de Jeu'}</button>
             <button className="btn-game btn-secondary mb-6" onClick={() => setShowGuide(true)} data-testid="guide-button"><HelpCircle size={18} />{t.guide}</button>
+            
+            <div className="flex justify-center gap-3 flex-wrap mb-4">
+              <button className="btn-game btn-secondary py-2 px-4" onClick={() => setShowStats(true)} data-testid="stats-button">
+                <BarChart3 size={18} />{lang === 'ES' ? 'Estadísticas' : lang === 'EN' ? 'Stats' : 'Statistiques'}
+              </button>
+              <button className="btn-game btn-secondary py-2 px-4" onClick={() => setShowAchievements(true)} data-testid="achievements-button">
+                <Award size={18} />{lang === 'ES' ? 'Logros' : lang === 'EN' ? 'Achievements' : 'Succès'}
+              </button>
+            </div>
             
             <div className="flex justify-center gap-3 flex-wrap">
               <button className="btn-icon" onClick={toggleLang} data-testid="lang-toggle-start"><span className="text-xl">{languageFlags[lang]}</span></button>
               <button className="btn-icon" onClick={toggleTheme} data-testid="theme-toggle-start" title={themeNames[theme]}><Palette size={20} /></button>
               <button className="mode-toggle" onClick={cycleDisplayMode} data-testid="mode-toggle">{displayModeIcon}<span className="text-sm">{displayModeText}</span></button>
+            </div>
+            
+            {/* XP Bar */}
+            <div className="mt-6 w-full max-w-xs">
+              <div className="flex justify-between text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
+                <span>{lang === 'ES' ? 'Nivel' : lang === 'EN' ? 'Level' : 'Niveau'} {playerStats.level}</span>
+                <span>{playerStats.totalXP % 1000}/1000 XP</span>
+              </div>
+              <div className="xp-bar">
+                <div className="xp-fill" style={{ width: `${(playerStats.totalXP % 1000) / 10}%` }}></div>
+              </div>
             </div>
           </div>
         </div>
@@ -610,6 +866,11 @@ function App() {
                   </div>
                   <div className={`font-mono text-lg font-bold text-center ${timeLeft <= 10 ? "timer-critical" : timeLeft <= 30 ? "timer-warning" : ""}`} style={{ color: timeLeft <= 30 ? undefined : "var(--accent-primary)" }} data-testid="timer-display">⏱️ {formatTime(timeLeft)}</div>
                   <div className={`font-mono text-base font-bold text-center ${scoreAnimating ? "score-pop" : ""}`} style={{ color: "var(--accent-primary)" }} data-testid="score-display">⭐ {score}</div>
+                  {comboCount >= 3 && (
+                    <div className="text-center font-bold text-sm" style={{ color: 'var(--warning)' }}>
+                      🔥 {comboCount}x {lang === 'ES' ? 'COMBO' : 'COMBO'}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 my-2 overflow-y-auto flex-1">
                   {words.map((w) => (<span key={w.word} className={`word-tag text-center text-xs py-1 px-2 ${foundWords.some((fw) => fw.word === w.word) ? "found" : ""}`}>{w.word}</span>))}
