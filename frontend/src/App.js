@@ -42,7 +42,8 @@ import {
   flashScreen,
   wordRevealWave,
   showFloatingText,
-  shakeElement
+  shakeElement,
+  blurBackground
 } from "./utils/visualFeedback";
 import {
   SelectionHistory,
@@ -441,6 +442,13 @@ function App() {
       if (!muted) playWinSound();
       triggerConfetti();
       
+      // Efecto blur espectacular al ganar
+      try {
+        blurBackground(1500, 12);
+      } catch (e) {
+        console.warn('Win blur effect error:', e);
+      }
+      
       // Record game completion
       const updatedStats = recordGameCompletion(
         level,
@@ -573,6 +581,9 @@ function App() {
           createCategoryParticles(foundWord.category, window.innerWidth / 2, window.innerHeight / 2);
           fireCategoryConfetti(foundWord.category);
           flashScreen('#22C55E', 150);
+          
+          // Efecto de blur de fondo - super atractivo
+          blurBackground(800, 6);
         }
       } catch (e) {
         console.warn('Visual effects error:', e);
@@ -592,6 +603,11 @@ function App() {
         try {
           createComboEffect(newCombo, window.innerWidth / 2, window.innerHeight / 2);
           if (!muted) playComboSound(newCombo, muted);
+          
+          // Efecto blur en combos altos
+          if (newCombo >= 5) {
+            blurBackground(600, 10);
+          }
         } catch (e) {
           console.warn('Combo effect error:', e);
         }
@@ -653,9 +669,20 @@ function App() {
     setHintsUsedThisGame((prev) => prev + 1);
     setAiLoading(true);
     
-    // Generate smart contextual hint (solo texto, sin resaltar celdas)
+    // Efecto blur al usar pista
+    try {
+      blurBackground(1000, 8);
+    } catch (e) {
+      console.warn('Blur effect error:', e);
+    }
+    
+    // Generate smart contextual hint (texto)
     const smartHint = generateSmartHint(pendingWord.word, [], pendingWord.category, lang);
     setKnowledgeText(smartHint);
+    
+    // Resaltar primeras 2-3 letras de la palabra en el tablero
+    const numCellsToShow = Math.min(3, Math.ceil(pendingWord.word.length / 3));
+    setHintCells(pendingWord.coords.slice(0, numCellsToShow).map((c) => `${c.r}-${c.c}`));
     
     // Visual hint - show general region after 3 seconds
     setTimeout(() => {
@@ -664,6 +691,9 @@ function App() {
     }, 3000);
     
     setAiLoading(false);
+    
+    // Clear hint cells after 5 seconds
+    setTimeout(() => setHintCells([]), 5000);
     
     // Reset combo on hint use
     setComboCount(0);

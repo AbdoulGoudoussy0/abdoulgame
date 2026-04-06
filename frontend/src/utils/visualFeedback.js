@@ -117,6 +117,59 @@ export const flashScreen = (color = '#22C55E', duration = 150) => {
   }, duration * 2);
 };
 
+// Blur background effect - creates a beautiful blur overlay
+export const blurBackground = (duration = 600, intensity = 8) => {
+  const blurOverlay = document.createElement('div');
+  blurOverlay.className = 'blur-overlay-effect';
+  blurOverlay.style.position = 'fixed';
+  blurOverlay.style.inset = '0';
+  blurOverlay.style.backdropFilter = `blur(0px)`;
+  blurOverlay.style.background = 'radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent)';
+  blurOverlay.style.pointerEvents = 'none';
+  blurOverlay.style.zIndex = '9997';
+  blurOverlay.style.transition = `backdrop-filter ${duration / 3}ms ease-out`;
+  
+  document.body.appendChild(blurOverlay);
+  
+  // Animate blur in
+  setTimeout(() => {
+    blurOverlay.style.backdropFilter = `blur(${intensity}px)`;
+  }, 10);
+  
+  // Animate blur out
+  setTimeout(() => {
+    blurOverlay.style.backdropFilter = 'blur(0px)';
+  }, duration * 0.7);
+  
+  // Remove element
+  setTimeout(() => {
+    if (document.body.contains(blurOverlay)) {
+      document.body.removeChild(blurOverlay);
+    }
+  }, duration);
+};
+
+// Pulse blur effect - subtle breathing effect
+export const pulseBlur = (element, cycles = 3) => {
+  if (!element) return;
+  
+  let currentCycle = 0;
+  const interval = setInterval(() => {
+    if (currentCycle >= cycles) {
+      clearInterval(interval);
+      element.style.filter = '';
+      return;
+    }
+    
+    element.style.filter = 'blur(2px)';
+    setTimeout(() => {
+      element.style.filter = 'blur(0px)';
+    }, 300);
+    
+    currentCycle++;
+  }, 600);
+};
+
 // Bounce animation for achievements
 export const bounceIn = (element) => {
   if (!element) return;
