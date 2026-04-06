@@ -674,9 +674,8 @@ function App() {
   const isLandscapeMobile = isLandscape && isMobile;
 
   const renderGameGrid = () => {
-    // Calculate max size based on viewport
-    const isDesktop = !isMobile && !isLandscapeMobile;
-    const maxSize = isDesktop ? "min(600px, 80vh)" : (isLandscapeMobile ? "calc(100vh - 40px)" : "100%");
+    // Sistema automático e inteligente de dimensionamiento
+    // Calcula el espacio disponible y ajusta el tablero automáticamente
     
     return (
       <div 
@@ -684,10 +683,12 @@ function App() {
         style={{ 
           display: "grid", 
           gridTemplateColumns: `repeat(${matrix.length}, 1fr)`, 
-          gap: isMobile ? "4px" : "6px", 
-          maxWidth: maxSize,
-          maxHeight: maxSize,
-          margin: "0 auto"
+          gap: "clamp(3px, 0.5vmin, 8px)", // Gap responsive automático
+          width: "min(100%, min(90vw, 90vh))", // Se ajusta al espacio disponible
+          aspectRatio: "1", // Mantiene cuadrado siempre
+          maxWidth: "min(95vmin, 700px)", // Máximo 700px o 95% del viewport más pequeño
+          margin: "0 auto", // Centrado automático
+          placeSelf: "center" // Centrado en flex/grid parent
         }} 
         data-testid="game-board">
         {matrix.map((row, r) => row.map((cell, c) => {

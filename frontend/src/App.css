@@ -162,34 +162,21 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  border-radius: 10px;
+  border-radius: clamp(6px, 1vmin, 12px); /* Radio responsive */
   transition: all 0.2s var(--transition-smooth);
   cursor: pointer;
   color: var(--text-secondary);
   background: var(--bg-surface);
-  aspect-ratio: 1;
+  aspect-ratio: 1; /* Siempre cuadrado */
   touch-action: none;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--border-color);
+  /* Tamaño de fuente COMPLETAMENTE automático basado en viewport */
+  font-size: clamp(0.75rem, 2.5vmin, 2rem);
 }
 
-/* Responsive cell sizes */
-@media (max-width: 480px) and (orientation: portrait) {
-  .grid-cell { font-size: clamp(0.9rem, 3.8vw, 1.15rem); border-radius: 8px; }
-}
-
-@media (max-width: 900px) and (orientation: landscape) {
-  .grid-cell { font-size: clamp(0.75rem, 2.5vh, 1rem); border-radius: 6px; }
-}
-
-@media (min-width: 481px) and (max-width: 1024px) and (orientation: portrait) {
-  .grid-cell { font-size: clamp(1.1rem, 3vw, 1.5rem); border-radius: 10px; }
-}
-
-@media (min-width: 1025px) {
-  .grid-cell { font-size: clamp(1rem, 1.2vw, 1.4rem); border-radius: 10px; }
-}
+/* Ya no necesitamos media queries - es 100% automático */
 
 .grid-cell:hover {
   background: var(--bg-elevated);
@@ -477,6 +464,19 @@ body {
   letter-spacing: 0.2em;
   color: var(--accent-primary);
   text-transform: uppercase;
+}
+
+/* ===== GAME GRID - Sistema Automático Inteligente ===== */
+.game-grid-wrapper {
+  /* Centrado perfecto automático */
+  justify-self: center;
+  align-self: center;
+  
+  /* Asegura que se mantenga dentro de los límites */
+  max-height: min(95vmin, calc(100vh - 200px));
+  
+  /* Transición suave cuando cambia el tamaño */
+  transition: all 0.3s ease;
 }
 
 /* ===== LEVEL SELECTOR ===== */
