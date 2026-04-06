@@ -758,8 +758,8 @@ function App() {
   );
 
   const GuideModal = () => (
-    <div className="modal-backdrop absolute inset-0 flex items-center justify-center z-50 p-4" data-testid="guide-modal">
-      <div className="modal-content glass-strong rounded-3xl p-5 md:p-6 max-w-md w-full max-h-[90vh] overflow-hidden">
+    <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-[9999] p-4" onClick={() => setShowGuide(false)} style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }} data-testid="guide-modal">
+      <div className="modal-content glass-strong rounded-3xl p-5 md:p-6 max-w-md w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-heading text-xl md:text-2xl mb-4 text-center" style={{ color: "var(--accent-primary)" }}>{t.guideTitle}</h2>
         <div className="guide-scroll">
           <div className="guide-section"><div className="flex items-start gap-3"><div className="guide-icon"><Target size={22} /></div><div><h3 className="guide-title">{t.guideObjective}</h3><p className="guide-text">{t.guideObjectiveText}</p></div></div></div>
