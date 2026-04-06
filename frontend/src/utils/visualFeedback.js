@@ -118,28 +118,28 @@ export const flashScreen = (color = '#22C55E', duration = 150) => {
 };
 
 // Blur background effect - creates a beautiful blur overlay
-export const blurBackground = (duration = 600, intensity = 8) => {
+export const blurBackground = (duration = 400, intensity = 4) => {
   const blurOverlay = document.createElement('div');
   blurOverlay.className = 'blur-overlay-effect';
   blurOverlay.style.position = 'fixed';
   blurOverlay.style.inset = '0';
   blurOverlay.style.backdropFilter = `blur(0px)`;
-  blurOverlay.style.background = 'radial-gradient(circle at center, rgba(139, 92, 246, 0.1), transparent)';
+  blurOverlay.style.background = 'radial-gradient(circle at center, rgba(139, 92, 246, 0.05), transparent)';
   blurOverlay.style.pointerEvents = 'none';
   blurOverlay.style.zIndex = '9997';
-  blurOverlay.style.transition = `backdrop-filter ${duration / 3}ms ease-out`;
+  blurOverlay.style.transition = `backdrop-filter ${duration / 4}ms ease-out`;
   
   document.body.appendChild(blurOverlay);
   
-  // Animate blur in
+  // Animate blur in (rápido)
   setTimeout(() => {
     blurOverlay.style.backdropFilter = `blur(${intensity}px)`;
   }, 10);
   
-  // Animate blur out
+  // Animate blur out (rápido)
   setTimeout(() => {
     blurOverlay.style.backdropFilter = 'blur(0px)';
-  }, duration * 0.7);
+  }, duration * 0.6);
   
   // Remove element
   setTimeout(() => {

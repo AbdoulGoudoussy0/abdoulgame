@@ -442,9 +442,9 @@ function App() {
       if (!muted) playWinSound();
       triggerConfetti();
       
-      // Efecto blur espectacular al ganar
+      // Efecto blur al ganar - moderado
       try {
-        blurBackground(1500, 12);
+        blurBackground(800, 6);
       } catch (e) {
         console.warn('Win blur effect error:', e);
       }
@@ -582,8 +582,8 @@ function App() {
           fireCategoryConfetti(foundWord.category);
           flashScreen('#22C55E', 150);
           
-          // Efecto de blur de fondo - super atractivo
-          blurBackground(800, 6);
+          // Efecto de blur de fondo - sutil y rápido
+          blurBackground(500, 3);
         }
       } catch (e) {
         console.warn('Visual effects error:', e);
@@ -604,9 +604,9 @@ function App() {
           createComboEffect(newCombo, window.innerWidth / 2, window.innerHeight / 2);
           if (!muted) playComboSound(newCombo, muted);
           
-          // Efecto blur en combos altos
+          // Efecto blur en combos altos - sutil
           if (newCombo >= 5) {
-            blurBackground(600, 10);
+            blurBackground(400, 4);
           }
         } catch (e) {
           console.warn('Combo effect error:', e);
@@ -669,9 +669,9 @@ function App() {
     setHintsUsedThisGame((prev) => prev + 1);
     setAiLoading(true);
     
-    // Efecto blur al usar pista
+    // Efecto blur al usar pista - suave
     try {
-      blurBackground(1000, 8);
+      blurBackground(600, 5);
     } catch (e) {
       console.warn('Blur effect error:', e);
     }
