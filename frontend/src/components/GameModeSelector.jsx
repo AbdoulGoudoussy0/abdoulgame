@@ -63,8 +63,8 @@ const GameModeSelector = ({ lang, categories, onSelectMode, onClose }) => {
   };
 
   return (
-    <div className="modal-backdrop absolute inset-0 flex items-center justify-center z-50 p-4">
-      <div className="modal-content glass-strong rounded-3xl p-6 max-w-md w-full">
+    <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-[9999] p-4" onClick={onClose} style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}>
+      <div className="modal-content glass-strong rounded-3xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-heading text-2xl mb-6 text-center" style={{ color: 'var(--accent-primary)' }}>
           {text.title}
         </h2>

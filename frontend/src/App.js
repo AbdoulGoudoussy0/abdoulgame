@@ -805,7 +805,7 @@ function App() {
 
       {/* Start Modal */}
       {gameState === "start" && (
-        <div className="modal-backdrop absolute inset-0 flex flex-col items-center justify-center z-50 p-6" style={{ background: "transparent" }} data-testid="start-modal">
+        <div className="start-screen absolute inset-0 flex flex-col items-center justify-center z-50 p-6" style={{ background: "transparent" }} data-testid="start-modal">
           <div className="modal-content text-center">
             <h1 className="font-heading text-4xl md:text-5xl text-glow mb-1 animate-float" style={{ color: "var(--accent-primary)" }}>{t.title}</h1>
             <p className="font-mono text-xs md:text-sm mb-6 tracking-widest" style={{ color: "var(--text-muted)" }}>{t.subtitle}</p>

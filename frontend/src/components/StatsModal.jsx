@@ -45,8 +45,8 @@ const StatsModal = ({ stats, lang, onClose }) => {
   const formatTime = (secs) => `${Math.floor(secs / 60)}:${(secs % 60).toString().padStart(2, '0')}`;
 
   return (
-    <div className="modal-backdrop absolute inset-0 flex items-center justify-center z-50 p-4">
-      <div className="modal-content glass-strong rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-[9999] p-4" onClick={onClose} style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}>
+      <div className="modal-content glass-strong rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-heading text-2xl" style={{ color: 'var(--accent-primary)' }}>{text.title}</h2>
           <button className="btn-icon w-10 h-10" onClick={onClose}><X size={18} /></button>
