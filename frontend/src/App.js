@@ -556,53 +556,80 @@ function App() {
       updateStreak(true);
       
       // Play category sound
-      playCategorySound(foundWord.category, muted);
+      try {
+        if (!muted) playCategorySound(foundWord.category, muted);
+      } catch (e) {
+        console.warn('Sound error:', e);
+      }
       
       // Vibration feedback
       if (vibration && navigator.vibrate) navigator.vibrate([40, 20, 40]);
 
       // Visual effects
-      const cells = currentSelection.map(s => document.querySelector(`[data-cell="${s.r}-${s.c}"]`));
-      wordRevealWave(cells, foundWord.category);
-      createCategoryParticles(foundWord.category, window.innerWidth / 2, window.innerHeight / 2);
-      fireCategoryConfetti(foundWord.category);
-      flashScreen('#22C55E', 150);
+      try {
+        const cells = currentSelection.map(s => document.querySelector(`[data-cell="${s.r}-${s.c}"]`));
+        if (cells && cells.length > 0 && cells[0]) {
+          wordRevealWave(cells, foundWord.category);
+          createCategoryParticles(foundWord.category, window.innerWidth / 2, window.innerHeight / 2);
+          fireCategoryConfetti(foundWord.category);
+          flashScreen('#22C55E', 150);
+        }
+      } catch (e) {
+        console.warn('Visual effects error:', e);
+      }
       
       // Show score multiplier if > 1
       if (multiplier > 1) {
-        showFloatingText(`+${finalScore} (${multiplier}x)`, window.innerWidth / 2, window.innerHeight / 3, '#F59E0B');
+        try {
+          showFloatingText(`+${finalScore} (${multiplier}x)`, window.innerWidth / 2, window.innerHeight / 3, '#F59E0B');
+        } catch (e) {
+          console.warn('Floating text error:', e);
+        }
       }
       
       // Combo effect
       if (newCombo >= 3) {
-        createComboEffect(newCombo, window.innerWidth / 2, window.innerHeight / 2);
-        playComboSound(newCombo, muted);
+        try {
+          createComboEffect(newCombo, window.innerWidth / 2, window.innerHeight / 2);
+          if (!muted) playComboSound(newCombo, muted);
+        } catch (e) {
+          console.warn('Combo effect error:', e);
+        }
       }
 
       // Record word in stats
-      const updatedStats = recordWord(foundWord.category, lang, wordTime);
-      setPlayerStats(updatedStats);
-      
-      // Check achievements
-      const newAchievements = checkAchievements(updatedStats, achievements);
-      if (newAchievements.length > 0) {
-        newAchievements.forEach((achievement, index) => {
-          setTimeout(() => {
-            createAchievementToast(achievement);
-            playAchievementSound(muted);
-          }, index * 500);
-        });
+      try {
+        const updatedStats = recordWord(foundWord.category, lang, wordTime);
+        setPlayerStats(updatedStats);
+        
+        // Check achievements
+        const newAchievements = checkAchievements(updatedStats, achievements);
+        if (newAchievements.length > 0) {
+          newAchievements.forEach((achievement, index) => {
+            setTimeout(() => {
+              try {
+                createAchievementToast(achievement);
+                if (!muted) playAchievementSound(muted);
+              } catch (e) {
+                console.warn('Achievement toast error:', e);
+              }
+            }, index * 500);
+          });
+        }
+      } catch (e) {
+        console.warn('Stats/achievements error:', e);
       }
 
       // Get inspirational quote
       try {
-        const quoteRes = await axios.get(`${API}/inspirational-quote`, {
+        const quoteRes = await axios.get(`${API}/api/inspirational-quote`, {
           params: { category: foundWord.category, language: lang }
         });
         setInspirationalQuote(quoteRes.data.quote);
         setKnowledgeText("✨ " + quoteRes.data.quote);
         setCurrentCategory(foundWord.categoryName);
-      } catch {
+      } catch (error) {
+        console.log('Quote fetch failed, using fallback:', error);
         setKnowledgeText("💡 " + foundWord.info);
         setCurrentCategory(foundWord.categoryName);
       }
@@ -626,25 +653,21 @@ function App() {
     setHintsUsedThisGame((prev) => prev + 1);
     setAiLoading(true);
     
-    // Generate smart contextual hint
+    // Generate smart contextual hint (solo texto, sin resaltar celdas)
     const smartHint = generateSmartHint(pendingWord.word, [], pendingWord.category, lang);
     setKnowledgeText(smartHint);
     
-    // Visual hint - show general region
-    const visualHint = generateVisualHint(pendingWord.coords, matrix.length);
+    // Visual hint - show general region after 3 seconds
     setTimeout(() => {
+      const visualHint = generateVisualHint(pendingWord.coords, matrix.length);
       setKnowledgeText(visualHint.message[lang] || visualHint.message.ES);
-    }, 2000);
+    }, 3000);
     
-    // Subtle hint cells (don't give exact position)
-    setHintCells(pendingWord.coords.slice(0, 2).map((c) => `${c.r}-${c.c}`));
     setAiLoading(false);
     
     // Reset combo on hint use
     setComboCount(0);
     updateStreak(false);
-    
-    setTimeout(() => setHintCells([]), 4000);
   };
 
   const handleShare = async () => {
