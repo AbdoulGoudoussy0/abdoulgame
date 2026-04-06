@@ -1,9 +1,21 @@
 # AbdoulGame Ultimate Polyglot - PRD
 
 ## Original Problem Statement
-Multilingual word search game with football/soccer stadium theme.
+Multilingual educational word search game - 100% FREE with NO AI costs.
 
-### V3 Final Updates (Jan 5, 2026):
+### V4 MAJOR UPDATE (Jan 5, 2026):
+**🎯 Core Improvements:**
+- ✅ **Algoritmo de palabras CORREGIDO** - 100% colocación exitosa en todos los niveles
+- ✅ **Sistema de Logros** - 10 logros desbloqueables con tracking persistente
+- ✅ **Sistema de Estadísticas** - XP, niveles, rachas, categorías
+- ✅ **Modo Claro/Oscuro** - Toggle manual + detección automática del sistema
+- ✅ **Frases Inspiradoras** - 180 citas educativas de filósofos y pensadores
+- ✅ **Efectos Visuales Mejorados** - Partículas temáticas por categoría
+- ✅ **4 Modos de Juego** - Normal, Práctica, Desafío Diario, Zen
+- ✅ **Sistema de Combos** - Multiplicador por palabras consecutivas
+- ✅ **Diccionario Expandido** - 40+ palabras en 12 categorías educativas
+
+### V3 Previous Updates:
 - Sonidos suaves usando Web Audio API (acordes agradables)
 - Soporte TOCAR y DESLIZAR para seleccionar palabras
 - Guía completa del juego en 3 idiomas
@@ -13,12 +25,13 @@ Multilingual word search game with football/soccer stadium theme.
 - Responsive perfecto para todas las pantallas
 
 ## Architecture
-- **Frontend**: React 19 with Tailwind CSS
-- **Backend**: FastAPI (Python) with pagination support
-- **Database**: MongoDB
-- **AI**: OpenAI GPT-4o via Emergent LLM Key
+- **Frontend**: React 19 with custom CSS (Glassmorphism)
+- **Backend**: FastAPI (Python) with improved word placement algorithm
+- **Database**: MongoDB (scores, player stats)
+- **AI**: ❌ REMOVED - 100% FREE (local hints & wisdom)
 - **Audio**: Web Audio API for soft, pleasant sounds
-- **Styling**: Glassmorphism with enhanced hover animations
+- **Storage**: LocalStorage for stats, achievements, preferences
+- **Styling**: Glassmorphism with light/dark mode support
 
 ## User Personas
 1. **Casual Gamers**: Quick, fun word puzzles
