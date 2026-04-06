@@ -673,25 +673,41 @@ function App() {
   const isMobile = deviceType === "mobile";
   const isLandscapeMobile = isLandscape && isMobile;
 
-  const renderGameGrid = () => (
-    <div className="glass-light rounded-2xl p-2 w-full game-grid-wrapper" style={{ display: "grid", gridTemplateColumns: `repeat(${matrix.length}, 1fr)`, gap: isMobile ? "4px" : "6px", maxWidth: isLandscapeMobile ? "calc(100vh - 40px)" : "100%", maxHeight: isLandscapeMobile ? "calc(100vh - 40px)" : undefined }} data-testid="game-board">
-      {matrix.map((row, r) => row.map((cell, c) => {
-        const key = `${r}-${c}`;
-        const isSelected = selection.some((s) => s.r === r && s.c === c);
-        const isFound = foundWords.some((w) => w.coords.some((coord) => coord.r === r && coord.c === c));
-        const isHint = hintCells.includes(key);
-        return (
-          <div key={key} className={`grid-cell ${isSelected ? "selected" : ""} ${isFound ? "found" : ""} ${isHint ? "hint" : ""}`}
-            onPointerDown={(e) => handleCellPointerDown(r, c, e)} onPointerEnter={() => handleCellPointerEnter(r, c)}
-            style={{ animationDelay: `${(r * matrix.length + c) * 10}ms` }} 
-            data-testid={`grid-cell-${r}-${c}`}
-            data-cell={`${r}-${c}`}>
-            {cell}
-          </div>
-        );
-      }))}
-    </div>
-  );
+  const renderGameGrid = () => {
+    // Calculate max size based on viewport
+    const isDesktop = !isMobile && !isLandscapeMobile;
+    const maxSize = isDesktop ? "min(600px, 80vh)" : (isLandscapeMobile ? "calc(100vh - 40px)" : "100%");
+    
+    return (
+      <div 
+        className="glass-light rounded-2xl p-2 w-full game-grid-wrapper" 
+        style={{ 
+          display: "grid", 
+          gridTemplateColumns: `repeat(${matrix.length}, 1fr)`, 
+          gap: isMobile ? "4px" : "6px", 
+          maxWidth: maxSize,
+          maxHeight: maxSize,
+          margin: "0 auto"
+        }} 
+        data-testid="game-board">
+        {matrix.map((row, r) => row.map((cell, c) => {
+          const key = `${r}-${c}`;
+          const isSelected = selection.some((s) => s.r === r && s.c === c);
+          const isFound = foundWords.some((w) => w.coords.some((coord) => coord.r === r && coord.c === c));
+          const isHint = hintCells.includes(key);
+          return (
+            <div key={key} className={`grid-cell ${isSelected ? "selected" : ""} ${isFound ? "found" : ""} ${isHint ? "hint" : ""}`}
+              onPointerDown={(e) => handleCellPointerDown(r, c, e)} onPointerEnter={() => handleCellPointerEnter(r, c)}
+              style={{ animationDelay: `${(r * matrix.length + c) * 10}ms` }} 
+              data-testid={`grid-cell-${r}-${c}`}
+              data-cell={`${r}-${c}`}>
+              {cell}
+            </div>
+          );
+        }))}
+      </div>
+    );
+  };
 
   const renderWordBank = () => (
     <div className={`word-bank flex gap-2 justify-center px-4 py-2 ${isMobile ? "flex-nowrap overflow-x-auto" : "flex-wrap"}`} data-testid="word-bank">
